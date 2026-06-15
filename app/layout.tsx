@@ -1,14 +1,28 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { getSession } from "@/lib/auth";
 import { prisma, safeDb } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "B2B Mandi — Wholesale Fresh Produce Marketplace",
+  title: "FreshKart — Fruits & Veggies, Wholesale",
   description:
-    "B2B Mandi connects farmers, wholesalers and suppliers with retailers, kirana stores and restaurants for bulk fresh fruits, vegetables and staples.",
+    "Order fresh fruits and vegetables in bulk, delivered to your business.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FreshKart",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#16bd5f",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default async function RootLayout({
@@ -18,7 +32,6 @@ export default async function RootLayout({
 }) {
   const session = await getSession();
 
-  // lightweight cart count for the navbar badge
   let cartCount = 0;
   if (session) {
     cartCount = await safeDb(
@@ -29,10 +42,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="flex min-h-screen flex-col">
-        <Navbar session={session} cartCount={cartCount} />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="bg-gray-100">
+        {/* Phone-frame app shell — centers a mobile column on larger screens */}
+        <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-gray-50 shadow-xl sm:min-h-[100dvh]">
+          <AppHeader session={session} />
+          <main className="flex-1 pb-24">{children}</main>
+          <BottomNav session={session} cartCount={cartCount} />
+        </div>
       </body>
     </html>
   );

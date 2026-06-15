@@ -1,12 +1,26 @@
-# 🌱 B2B Mandi
+# 🌱 B2B Mandi / FreshKart
 
-A **B2B wholesale fresh-produce marketplace** in the style of Ninjacart — connecting
-sellers (farmers, co-ops, wholesalers) with buyers (retailers, kirana stores,
-restaurants & HoReCa) for **bulk ordering** of fruits, vegetables, staples and
-dairy, farm-direct and minus the middlemen.
+A **B2B wholesale fresh-produce app** in the style of Ninjacart — order **fruits &
+vegetables** in bulk, farm-direct to your business.
 
 Built end-to-end with **Next.js 14 (App Router) · TypeScript · Tailwind CSS ·
 Prisma · PostgreSQL**.
+
+## 📱 Mobile-first experience
+
+The primary UI is a **mobile app** (phone-frame shell, sticky header, bottom tab
+nav) optimised for a 4-step flow — designed to wrap as an **APK later** (it ships
+a PWA manifest + maskable icon, so it's installable / Capacitor- & TWA-ready):
+
+1. **Login** — quick auth with one-tap demo logins.
+2. **Browse produce** — Ninjacart-style catalogue: category chips, search, 2-up
+   product grid with inline **ADD** + quantity steppers and a sticky cart bar.
+3. **Billing** — items, editable delivery details, payment method, bill summary,
+   one-tap **Place order**.
+4. **Order success** — confirmation with order number, ETA, summary & tracking.
+
+> A fuller desktop marketplace (catalogue/detail pages, seller hub for product &
+> order management) also ships under `/products`, `/seller`, etc.
 
 ---
 

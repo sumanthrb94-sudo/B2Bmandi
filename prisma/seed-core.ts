@@ -15,9 +15,7 @@ const IMG = (id: string) =>
 const CATEGORIES = [
   { name: "Vegetables", slug: "vegetables", image: IMG("photo-1540420773420-3366772f4999") },
   { name: "Fruits", slug: "fruits", image: IMG("photo-1619566636858-adf3ef46400b") },
-  { name: "Staples & Grains", slug: "staples", image: IMG("photo-1586201375761-83865001e31c") },
   { name: "Leafy Greens", slug: "leafy-greens", image: IMG("photo-1576045057995-568f588f82fb") },
-  { name: "Dairy", slug: "dairy", image: IMG("photo-1550583724-b2692b85b150") },
 ];
 
 const PRODUCTS: Record<
@@ -48,21 +46,10 @@ const PRODUCTS: Record<
     { name: "Kinnow Oranges", unit: "bag", price: 1100, minQty: 4, stock: 160, origin: "Abohar, Punjab", image: IMG("photo-1582979512210-99b6a53386f9"), desc: "Juicy Kinnow mandarins. 20kg mesh bag." },
     { name: "Green Grapes (Thompson)", unit: "crate", price: 980, minQty: 3, stock: 140, origin: "Nashik, Maharashtra", image: IMG("photo-1537640538966-79f369143f8f"), desc: "Seedless Thompson grapes, export grade. ~8kg crate." },
   ],
-  staples: [
-    { name: "Sona Masoori Rice", unit: "bag", price: 2650, minQty: 5, stock: 400, origin: "Raichur, Karnataka", image: IMG("photo-1586201375761-83865001e31c"), desc: "Aged Sona Masoori raw rice. 25kg bag, low starch." },
-    { name: "Toor Dal (Unpolished)", unit: "bag", price: 3200, minQty: 4, stock: 220, origin: "Gulbarga, Karnataka", image: IMG("photo-1596797038530-2c107229654b"), desc: "Premium unpolished toor dal. 30kg bag." },
-    { name: "Whole Wheat (Lokwan)", unit: "bag", price: 1450, minQty: 5, stock: 350, origin: "Indore, Madhya Pradesh", image: IMG("photo-1574323347407-f5e1ad6d020b"), desc: "MP Lokwan wheat, mill-grade. 30kg bag." },
-    { name: "Sunflower Oil (Refined)", unit: "crate", price: 2280, minQty: 2, stock: 130, origin: "Gujarat", image: IMG("photo-1474979266404-7eaacbcd87c5"), desc: "Refined sunflower oil, 15L tin x 1 per case. Crate of single tin." },
-  ],
   "leafy-greens": [
     { name: "Palak (Spinach)", unit: "crate", price: 260, minQty: 4, stock: 110, origin: "Pune, Maharashtra", image: IMG("photo-1576045057995-568f588f82fb"), desc: "Fresh tender spinach bunches. ~8kg crate, harvested daily." },
     { name: "Coriander (Dhania)", unit: "crate", price: 320, minQty: 4, stock: 95, origin: "Pune, Maharashtra", image: IMG("photo-1535189487909-a262ad10c165"), desc: "Aromatic coriander bunches. ~6kg crate." },
     { name: "Methi (Fenugreek)", unit: "crate", price: 300, minQty: 4, stock: 80, origin: "Nashik, Maharashtra", image: IMG("photo-1515872474884-c6d09b4f1d2f"), desc: "Fresh methi leaves, cleaned bunches. ~6kg crate." },
-  ],
-  dairy: [
-    { name: "Cow Milk (Toned)", unit: "crate", price: 1320, minQty: 2, stock: 200, origin: "Anand, Gujarat", image: IMG("photo-1550583724-b2692b85b150"), desc: "Toned cow milk, 500ml pouch x 24 per crate. Chilled supply." },
-    { name: "Paneer (Fresh)", unit: "kg", price: 320, minQty: 10, stock: 140, origin: "Karnal, Haryana", image: IMG("photo-1631452180519-c014fe946bc7"), desc: "Fresh full-cream paneer, vacuum packed. Min order 10kg." },
-    { name: "Table Butter", unit: "kg", price: 440, minQty: 10, stock: 100, origin: "Anand, Gujarat", image: IMG("photo-1589985270826-4b7bb135bc9d"), desc: "Salted table butter, 500g blocks. Min order 10kg." },
   ],
 };
 
