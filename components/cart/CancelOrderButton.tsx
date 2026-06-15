@@ -35,7 +35,12 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
 
   return (
     <div className="space-y-2">
-      <Button variant="danger" onClick={cancel} disabled={busy}>
+      <Button
+        variant="danger"
+        onClick={cancel}
+        disabled={busy}
+        className="w-full"
+      >
         {busy ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (

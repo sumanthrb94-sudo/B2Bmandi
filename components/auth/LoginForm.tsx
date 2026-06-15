@@ -10,7 +10,6 @@ import { Input, Field } from "@/components/ui/Input";
 const DEMO_ACCOUNTS = [
   { label: "Buyer", email: "buyer@kirana.com" },
   { label: "Seller", email: "ramesh@greenfarms.com" },
-  { label: "Admin", email: "admin@b2bmandi.com" },
 ] as const;
 
 const DEMO_PASSWORD = "password123";
@@ -125,10 +124,10 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       </div>
 
       <p className="text-center text-sm text-gray-600">
-        New to B2B Mandi?{" "}
+        New to FreshKart?{" "}
         <Link
           href="/register"
-          className="font-medium text-brand-600 hover:text-brand-700"
+          className="font-semibold text-brand-600 hover:text-brand-700"
         >
           Create an account
         </Link>

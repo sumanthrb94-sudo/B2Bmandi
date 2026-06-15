@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { CheckCircle2, MapPin, CreditCard } from "lucide-react";
+import {
+  CheckCircle2,
+  MapPin,
+  Wallet,
+  ClipboardCheck,
+  Package,
+  Truck,
+  PackageCheck,
+  XCircle,
+  Phone,
+} from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { OrderStatusBadge } from "@/components/ui/Badge";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { CancelOrderButton } from "@/components/cart/CancelOrderButton";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Order details — B2B Mandi",
+  title: "Track order — FreshKart",
 };
 
-const TIMELINE = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"] as const;
+const STAGES = [
+  { key: "PENDING", label: "Order placed", icon: ClipboardCheck, note: "We’ve received your order." },
+  { key: "CONFIRMED", label: "Confirmed", icon: CheckCircle2, note: "Seller accepted your order." },
+  { key: "PACKED", label: "Packed & ready", icon: Package, note: "Your produce is packed fresh." },
+  { key: "SHIPPED", label: "Out for delivery", icon: Truck, note: "On the way to you." },
+  { key: "DELIVERED", label: "Delivered", icon: PackageCheck, note: "Order delivered. Enjoy!" },
+] as const;
 
 const PAYMENT_LABELS: Record<string, string> = {
   COD: "Cash on delivery",
@@ -23,7 +38,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   ONLINE: "Online payment",
 };
 
-export default async function OrderDetailPage({
+export default async function OrderTrackPage({
   params,
   searchParams,
 }: {
@@ -41,168 +56,188 @@ export default async function OrderDetailPage({
       },
     },
   });
-
   if (!order || order.buyerId !== session.userId) notFound();
 
   const placed = searchParams.placed === "1";
+  const cancelled = order.status === "CANCELLED";
   const cancellable = order.status === "PENDING" || order.status === "CONFIRMED";
-  const currentStep =
-    order.status === "CANCELLED" ? -1 : TIMELINE.indexOf(order.status as never);
+  const currentStep = cancelled
+    ? -1
+    : STAGES.findIndex((s) => s.key === order.status);
 
   return (
-    <div className="container-app py-8">
+    <div className="px-4 py-4">
       {placed && (
-        <div className="mb-6 flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-800">
-          <CheckCircle2 className="h-5 w-5 shrink-0" />
-          Order placed successfully! We&apos;ll notify the sellers right away.
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2.5 text-sm font-medium text-brand-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          Order placed successfully!
         </div>
       )}
 
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="flex items-start justify-between">
         <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {order.orderNumber}
-            </h1>
-            <OrderStatusBadge status={order.status} />
-          </div>
-          <p className="mt-1 text-sm text-gray-500">
-            Placed on {formatDate(order.createdAt)}
+          <p className="text-base font-bold text-gray-900">
+            {order.orderNumber}
+          </p>
+          <p className="mt-0.5 text-xs text-gray-500">
+            Placed {formatDate(order.createdAt)}
           </p>
         </div>
-        {cancellable && <CancelOrderButton orderId={order.id} />}
+        <OrderStatusBadge status={order.status} />
       </div>
 
-      {/* Timeline */}
-      {order.status !== "CANCELLED" && (
-        <Card className="mb-6">
-          <CardBody>
-            <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-0">
-              {TIMELINE.map((step, idx) => {
-                const done = idx <= currentStep;
-                const isCurrent = idx === currentStep;
-                return (
-                  <li
-                    key={step}
-                    className="flex flex-1 items-center gap-3 sm:flex-col sm:gap-2 sm:text-center"
-                  >
+      {/* Tracking */}
+      <section className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        {cancelled ? (
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <XCircle className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">
+                Order cancelled
+              </p>
+              <p className="text-xs text-gray-500">
+                This order was cancelled and stock was released.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <ol className="relative">
+            {STAGES.map((stage, idx) => {
+              const done = idx < currentStep;
+              const current = idx === currentStep;
+              const Icon = stage.icon;
+              const isLast = idx === STAGES.length - 1;
+              return (
+                <li key={stage.key} className="flex gap-3 pb-5 last:pb-0">
+                  {/* dot + connector */}
+                  <div className="relative flex flex-col items-center">
                     <span
                       className={[
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                        done
+                        "z-10 flex h-9 w-9 items-center justify-center rounded-full ring-4 ring-white",
+                        done || current
                           ? "bg-brand-500 text-white"
                           : "bg-gray-100 text-gray-400",
+                        current ? "shadow-[0_0_0_4px_rgba(22,189,95,0.18)]" : "",
                       ].join(" ")}
                     >
-                      {idx + 1}
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <span
+                    {!isLast && (
+                      <span
+                        className={[
+                          "absolute top-9 h-[calc(100%-0.5rem)] w-0.5",
+                          done ? "bg-brand-400" : "bg-gray-200",
+                        ].join(" ")}
+                      />
+                    )}
+                  </div>
+                  {/* label */}
+                  <div className="pt-1">
+                    <p
                       className={[
-                        "text-xs font-medium",
-                        isCurrent
+                        "text-sm font-semibold",
+                        current
                           ? "text-brand-700"
                           : done
-                            ? "text-gray-700"
+                            ? "text-gray-900"
                             : "text-gray-400",
                       ].join(" ")}
                     >
-                      {step.charAt(0) + step.slice(1).toLowerCase()}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          </CardBody>
-        </Card>
+                      {stage.label}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {current
+                        ? stage.note
+                        : done
+                          ? "Completed"
+                          : "Pending"}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
+
+      {/* Items */}
+      <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+        <p className="mb-2 text-sm font-bold text-gray-900">
+          Items ({order.items.length})
+        </p>
+        <div className="divide-y divide-gray-100">
+          {order.items.map((item) => (
+            <div key={item.id} className="flex items-center gap-3 py-2.5">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                <SafeImage
+                  src={item.product.image}
+                  alt={item.productName}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-gray-900">
+                  {item.productName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {formatCurrency(item.unitPrice)}/{item.unit} × {item.quantity}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-gray-900">
+                {formatCurrency(item.lineTotal)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between border-t border-dashed border-gray-200 pt-2">
+          <span className="font-bold text-gray-900">Total</span>
+          <span className="font-bold text-gray-900">
+            {formatCurrency(order.totalAmount)}
+          </span>
+        </div>
+      </section>
+
+      {/* Delivery */}
+      <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+        <p className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-gray-900">
+          <MapPin className="h-4 w-4 text-brand-500" /> Delivery address
+        </p>
+        <p className="text-sm text-gray-700">{order.deliveryName}</p>
+        <p className="text-sm text-gray-500">
+          {order.deliveryAddress}, {order.deliveryCity} — {order.deliveryPincode}
+        </p>
+        <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
+          <Phone className="h-3 w-3" /> {order.deliveryPhone}
+        </p>
+      </section>
+
+      {/* Payment */}
+      <section className="mt-3 flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+        <span className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+          <Wallet className="h-4 w-4 text-brand-500" /> Payment
+        </span>
+        <span className="text-sm text-gray-600">
+          {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
+        </span>
+      </section>
+
+      {order.notes && (
+        <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+          <p className="text-sm font-bold text-gray-900">Notes</p>
+          <p className="mt-1 text-sm text-gray-600">{order.notes}</p>
+        </section>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Items */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-gray-900">Items</h2>
-            </CardHeader>
-            <CardBody className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex gap-4">
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                    <Image
-                      src={item.product.image}
-                      alt={item.productName}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900">
-                      {item.productName}
-                    </p>
-                    <p className="mt-0.5 text-sm text-gray-500">
-                      {formatCurrency(item.unitPrice)} / {item.unit} ×{" "}
-                      {item.quantity}
-                    </p>
-                  </div>
-                  <span className="shrink-0 font-semibold text-gray-900">
-                    {formatCurrency(item.lineTotal)}
-                  </span>
-                </div>
-              ))}
-              <div className="flex justify-between border-t border-gray-100 pt-4">
-                <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatCurrency(order.totalAmount)}
-                </span>
-              </div>
-            </CardBody>
-          </Card>
+      {cancellable && (
+        <div className="mt-4">
+          <CancelOrderButton orderId={order.id} />
         </div>
-
-        {/* Delivery + payment */}
-        <div className="space-y-6 lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <h2 className="flex items-center gap-2 font-semibold text-gray-900">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                Delivery
-              </h2>
-            </CardHeader>
-            <CardBody className="space-y-1 text-sm text-gray-600">
-              <p className="font-medium text-gray-900">{order.deliveryName}</p>
-              <p>{order.deliveryPhone}</p>
-              <p>{order.deliveryAddress}</p>
-              <p>
-                {order.deliveryCity} - {order.deliveryPincode}
-              </p>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h2 className="flex items-center gap-2 font-semibold text-gray-900">
-                <CreditCard className="h-4 w-4 text-gray-400" />
-                Payment
-              </h2>
-            </CardHeader>
-            <CardBody className="text-sm text-gray-600">
-              {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
-            </CardBody>
-          </Card>
-
-          {order.notes && (
-            <Card>
-              <CardHeader>
-                <h2 className="font-semibold text-gray-900">Notes</h2>
-              </CardHeader>
-              <CardBody className="text-sm text-gray-600">
-                {order.notes}
-              </CardBody>
-            </Card>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
