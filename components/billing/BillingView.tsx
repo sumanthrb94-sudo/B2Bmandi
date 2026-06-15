@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -12,6 +11,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency } from "@/lib/utils";
 
 interface Item {
@@ -146,7 +146,7 @@ export function BillingView({
           {items.map((it) => (
             <div key={it.id} className="flex items-center gap-3 py-2.5">
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                <Image src={it.image} alt={it.name} fill sizes="48px" className="object-cover" />
+                <SafeImage src={it.image} alt={it.name} fill sizes="48px" className="object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-gray-900">

@@ -22,6 +22,18 @@ a PWA manifest + maskable icon, so it's installable / Capacitor- & TWA-ready):
 > A fuller desktop marketplace (catalogue/detail pages, seller hub for product &
 > order management) also ships under `/products`, `/seller`, etc.
 
+## 🛡️ Production-ready
+
+- **Resilient images** — `SafeImage` falls back to a branded placeholder if a CDN
+  image fails (no broken-image icons in prod).
+- **Error/empty/loading states** — `error.tsx`, `not-found.tsx`, `loading.tsx`
+  skeletons, and graceful DB-down fallbacks (`safeDb`).
+- **Security** — hardened headers (nosniff, frame, referrer, permissions policy),
+  `x-powered-by` removed, httpOnly JWT cookies, bcrypt passwords, patched Next.
+- **Health check** — `GET /api/health` reports app + database status (200/503) for
+  uptime monitors and load balancers.
+- **Catalogue** — 16 vegetables + fruits & leafy greens, seeded demo data.
+
 ---
 
 ## ✨ Features

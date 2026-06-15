@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { MapPin } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/utils";
 import type { ProductWithRelations } from "@/lib/types";
@@ -13,7 +13,7 @@ export function ProductCard({ product }: { product: ProductWithRelations }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        <Image
+        <SafeImage
           src={product.image}
           alt={product.name}
           fill

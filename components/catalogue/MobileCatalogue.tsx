@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Minus, ShoppingBag, Loader2, MapPin } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency } from "@/lib/utils";
 import type { ProductWithRelations } from "@/lib/types";
 
@@ -169,7 +169,7 @@ export function MobileCatalogue({
                 className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
               >
                 <div className="relative aspect-square bg-gray-100">
-                  <Image
+                  <SafeImage
                     src={p.image}
                     alt={p.name}
                     fill
