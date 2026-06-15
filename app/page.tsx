@@ -1,45 +1,41 @@
 import { prisma, safeDb } from "@/lib/db";
-import { getSession } from "@/lib/auth";
-import { MobileCatalogue } from "@/components/catalogue/MobileCatalogue";
-import type { ProductWithRelations } from "@/lib/types";
+import {
+  UnifiedOrderScreen,
+  type UProduct,
+} from "@/components/order/UnifiedOrderScreen";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const session = await getSession();
-
-  const [categories, products, cartItems] = await Promise.all([
+  const [categories, products] = await Promise.all([
     safeDb(prisma.category.findMany({ orderBy: { name: "asc" } }), []),
     safeDb(
       prisma.product.findMany({
         where: { isActive: true, stockQty: { gt: 0 } },
-        include: {
-          category: true,
-          seller: {
-            select: { id: true, name: true, businessName: true, city: true },
-          },
-        },
+        include: { category: { select: { name: true, slug: true } } },
         orderBy: { name: "asc" },
       }),
       [],
     ),
-    session
-      ? safeDb(
-          prisma.cartItem.findMany({
-            where: { userId: session.userId },
-            select: { id: true, productId: true, quantity: true },
-          }),
-          [],
-        )
-      : Promise.resolve([]),
   ]);
 
+  const uProducts: UProduct[] = products.map((p) => ({
+    id: p.id,
+    name: p.name,
+    image: p.image,
+    unit: p.unit,
+    pricePerUnit: p.pricePerUnit,
+    minOrderQty: p.minOrderQty,
+    stockQty: p.stockQty,
+    origin: p.origin,
+    categoryName: p.category.name,
+    categorySlug: p.category.slug,
+  }));
+
   return (
-    <MobileCatalogue
-      products={products as ProductWithRelations[]}
+    <UnifiedOrderScreen
+      products={uProducts}
       categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
-      initialCart={cartItems}
-      isLoggedIn={!!session}
     />
   );
 }

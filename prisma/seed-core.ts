@@ -32,9 +32,9 @@ const PRODUCTS: Record<
   }[]
 > = {
   vegetables: [
-    { name: "Fresh Tomatoes (Hybrid)", unit: "crate", price: 480, minQty: 5, stock: 320, origin: "Nashik, Maharashtra", image: IMG("photo-1546470427-e26264be0b0d"), desc: "Farm-fresh hybrid tomatoes, graded and crated for retail. Each crate ~25kg." },
-    { name: "Red Onions", unit: "bag", price: 920, minQty: 10, stock: 540, origin: "Lasalgaon, Maharashtra", image: IMG("photo-1518977956812-cd3dbadaaf31"), desc: "Premium Nashik red onions. 50kg jute bag, well cured for long storage." },
-    { name: "Potatoes (Jyoti)", unit: "bag", price: 760, minQty: 10, stock: 610, origin: "Agra, Uttar Pradesh", image: IMG("photo-1518977676601-b53f82aba655"), desc: "Grade-A Jyoti potatoes, uniform size. 50kg bag, ideal for restaurants & kirana." },
+    { name: "Fresh Tomatoes (Hybrid)", unit: "crate", price: 480, minQty: 5, stock: 320, origin: "Nashik, Maharashtra", image: "/products/tomato.jpg", desc: "Farm-fresh hybrid tomatoes, graded and crated for retail. Each crate ~25kg." },
+    { name: "Red Onions", unit: "bag", price: 920, minQty: 10, stock: 540, origin: "Lasalgaon, Maharashtra", image: "/products/onion.jpg", desc: "Premium Nashik red onions. 50kg jute bag, well cured for long storage." },
+    { name: "Potatoes (Jyoti)", unit: "bag", price: 760, minQty: 10, stock: 610, origin: "Agra, Uttar Pradesh", image: "/products/potato.jpg", desc: "Grade-A Jyoti potatoes, uniform size. 50kg bag, ideal for restaurants & kirana." },
     { name: "Green Capsicum", unit: "crate", price: 640, minQty: 3, stock: 180, origin: "Pune, Maharashtra", image: IMG("photo-1563565375-f3fdfdbefa83"), desc: "Crisp green bell peppers, hand-picked. ~10kg crate." },
     { name: "Cauliflower", unit: "crate", price: 420, minQty: 4, stock: 150, origin: "Karnal, Haryana", image: IMG("photo-1568584711271-6c929fb49b60"), desc: "Snow-white cauliflower heads, tightly packed. ~15kg crate." },
     { name: "Carrots (Ooty)", unit: "crate", price: 580, minQty: 4, stock: 210, origin: "Ooty, Tamil Nadu", image: IMG("photo-1598170845058-32b9d6a5da37"), desc: "Sweet red Ooty carrots, washed and graded. ~20kg crate." },
@@ -42,12 +42,12 @@ const PRODUCTS: Record<
     { name: "Lady Finger (Okra)", unit: "crate", price: 520, minQty: 3, stock: 140, origin: "Anand, Gujarat", image: IMG("photo-1664289397922-3f9c3d9b9b6e"), desc: "Tender green okra, hand-picked daily. ~8kg crate." },
     { name: "Green Peas", unit: "crate", price: 880, minQty: 3, stock: 130, origin: "Pune, Maharashtra", image: IMG("photo-1587735243615-c03f25aaff15"), desc: "Sweet shelled green peas, cold-chain handled. ~10kg crate." },
     { name: "Cucumber", unit: "crate", price: 340, minQty: 4, stock: 200, origin: "Bengaluru Rural, Karnataka", image: IMG("photo-1604977042946-1eecc30f269e"), desc: "Crunchy salad cucumbers, even sized. ~15kg crate." },
-    { name: "Cabbage", unit: "crate", price: 300, minQty: 5, stock: 240, origin: "Ooty, Tamil Nadu", image: IMG("photo-1594282486552-05b4d80fbb9f"), desc: "Firm green cabbage heads. ~20kg crate." },
+    { name: "Cabbage", unit: "crate", price: 300, minQty: 5, stock: 240, origin: "Ooty, Tamil Nadu", image: "/products/cabbage.jpg", desc: "Firm green cabbage heads. ~20kg crate." },
     { name: "Green Beans", unit: "crate", price: 620, minQty: 3, stock: 120, origin: "Kodaikanal, Tamil Nadu", image: IMG("photo-1567375698348-5d9d5ae99de0"), desc: "Stringless French beans, crisp and fresh. ~8kg crate." },
     { name: "Garlic", unit: "bag", price: 2400, minQty: 2, stock: 90, origin: "Madhya Pradesh", image: IMG("photo-1540148426945-6cf22a6b2383"), desc: "Plump white garlic bulbs, well cured. 10kg mesh bag." },
     { name: "Ginger", unit: "bag", price: 1800, minQty: 2, stock: 110, origin: "Wayanad, Kerala", image: IMG("photo-1615485290382-441e4d049cb5"), desc: "Fresh aromatic ginger, mature rhizomes. 10kg bag." },
     { name: "Bottle Gourd (Lauki)", unit: "crate", price: 280, minQty: 4, stock: 160, origin: "Pune, Maharashtra", image: IMG("photo-1659261200833-ec8761558af7"), desc: "Tender bottle gourd, ideal length. ~15kg crate." },
-    { name: "Green Chilli", unit: "crate", price: 740, minQty: 2, stock: 100, origin: "Guntur, Andhra Pradesh", image: IMG("photo-1583119022894-919a68a3d0e3"), desc: "Spicy fresh green chillies, graded. ~6kg crate." },
+    { name: "Red Chilli (Guntur)", unit: "crate", price: 740, minQty: 2, stock: 100, origin: "Guntur, Andhra Pradesh", image: "/products/chilli.jpg", desc: "Spicy fresh red chillies, graded. ~6kg crate." },
   ],
   fruits: [
     { name: "Bananas (Robusta)", unit: "crate", price: 540, minQty: 5, stock: 280, origin: "Theni, Tamil Nadu", image: IMG("photo-1571771894821-ce9b6c11b08e"), desc: "Premium Robusta bananas, even ripening. ~20kg crate." },
