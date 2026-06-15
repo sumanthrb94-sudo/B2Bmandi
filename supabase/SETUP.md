@@ -2,7 +2,33 @@
 
 This app uses PostgreSQL via Prisma. Supabase is the recommended host.
 
-## 1. Create a Supabase project
+## ⚡ Fastest path (no CLI, no local DB access needed)
+
+Use this when you can't connect to the DB directly (e.g. a restricted network).
+Everything happens in the browser + Vercel.
+
+1. **Create the tables** — Supabase dashboard → **SQL Editor** → New query →
+   paste the entire contents of [`schema.sql`](./schema.sql) → **Run**.
+2. **Get the pooler connection strings** — dashboard top bar → **Connect**:
+   - **Transaction pooler** (port `6543`) → use as `DATABASE_URL`
+   - **Session pooler** (port `5432`) → use as `DIRECT_URL`
+   - In both, replace `[YOUR-PASSWORD]` with your DB password **URL-encoded**
+     (e.g. an `@` in the password becomes `%40`).
+3. **Set Vercel env vars** (Settings → Environment Variables): `DATABASE_URL`,
+   `DIRECT_URL`, `AUTH_SECRET`, `SEED_SECRET` → **redeploy**.
+4. **Seed demo data** (runs on Vercel, which can reach Supabase):
+   ```
+   curl -X POST "https://<your-app>.vercel.app/api/seed?secret=<SEED_SECRET>"
+   ```
+5. Log in at the live URL with `buyer@kirana.com` / `password123`.
+
+> ⚠️ Why the **pooler** and not `db.<ref>.supabase.co:5432`? The direct host is
+> IPv6-only; Vercel's serverless functions connect over IPv4, so you must use the
+> IPv4-compatible Supavisor pooler endpoints above.
+
+---
+
+## Alternative: provision from a machine with DB access
 - Go to <https://supabase.com/dashboard> → **New project**.
 - Pick a name (e.g. `b2bmandi`), a strong **database password** (save it), and a region.
 
