@@ -1,0 +1,147 @@
+// B2B Mandi — Prisma schema
+// A Ninjacart-style B2B fresh-produce marketplace connecting sellers
+// (farmers/suppliers/wholesalers) with buyers (retailers/kirana stores/HoReCa).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING // placed, awaiting seller confirmation
+  CONFIRMED // seller accepted
+  PACKED // ready for dispatch
+  SHIPPED // out for delivery
+  DELIVERED // completed
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         Role     @default(BUYER)
+  businessName String?
+  phone        String?
+  gstin        String? // GST identification number (India B2B)
+  address      String?
+  city         String?
+  pincode      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products   Product[] // products this user sells (if SELLER)
+  cartItems  CartItem[]
+  orders     Order[]     @relation("BuyerOrders")
+  orderItems OrderItem[] @relation("SellerOrderItems")
+
+  @@index([role])
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  image    String?
+  products Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String
+  image        String
+  unit         String   @default("kg") // kg, crate, dozen, quintal, bag
+  pricePerUnit Float
+  minOrderQty  Int      @default(1) // minimum bulk order quantity
+  stockQty     Int      @default(0)
+  origin       String? // e.g. "Nashik, Maharashtra"
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([isActive])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  paymentMethod   String      @default("COD") // COD, CREDIT, ONLINE
+  deliveryName    String
+  deliveryPhone   String
+  deliveryAddress String
+  deliveryCity    String
+  deliveryPincode String
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  buyerId String
+  buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  items OrderItem[]
+
+  @@index([buyerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  productName String // snapshot at purchase time
+  unit        String
+  unitPrice   Float
+  quantity    Int
+  lineTotal   Float
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  sellerId String
+  seller   User   @relation("SellerOrderItems", fields: [sellerId], references: [id])
+
+  @@index([orderId])
+  @@index([sellerId])
+}
