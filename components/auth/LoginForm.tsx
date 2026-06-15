@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Input, Field } from "@/components/ui/Input";
 
 const DEMO_ACCOUNTS = [
-  { label: "Buyer", email: "buyer@kirana.com" },
-  { label: "Seller", email: "ramesh@greenfarms.com" },
+  { label: "Customer", email: "buyer@kirana.com" },
+  { label: "Admin", email: "admin@b2bmandi.com" },
 ] as const;
 
 const DEMO_PASSWORD = "password123";
@@ -36,7 +36,10 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         setError(data.error ?? "Unable to log in");
         return;
       }
-      router.push(callbackUrl || "/");
+      // admins land on the dashboard; everyone else on the shop (or callback)
+      const dest =
+        data.user?.role === "ADMIN" ? "/admin" : callbackUrl || "/";
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");

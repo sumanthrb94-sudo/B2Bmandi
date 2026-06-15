@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { prisma, safeDb } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import {
   UnifiedOrderScreen,
   type UProduct,
@@ -7,6 +9,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (session.role === "ADMIN") redirect("/admin");
+
   const [categories, products] = await Promise.all([
     safeDb(prisma.category.findMany({ orderBy: { name: "asc" } }), []),
     safeDb(

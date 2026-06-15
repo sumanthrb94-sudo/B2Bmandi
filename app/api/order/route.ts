@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,14 +24,16 @@ const schema = z.object({
   notes: z.string().optional(),
 });
 
-const GUEST_EMAIL = "guest@freshkart.local";
-
 /**
- * Guest (login-free) order placement for the unified B2B order screen.
- * Accepts a cart payload + delivery details, validates stock, and creates an
- * order under a shared guest buyer. No authentication required.
+ * Order placement for the unified B2B order screen. Requires a logged-in user;
+ * the order is recorded under their account. Validates stock in a transaction.
  */
 export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please log in to place an order." }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -94,19 +97,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const order = await prisma.$transaction(async (tx) => {
-      // shared guest buyer (create on first use)
-      const guest = await tx.user.upsert({
-        where: { email: GUEST_EMAIL },
-        update: {},
-        create: {
-          email: GUEST_EMAIL,
-          password: "-", // unusable; guest never logs in
-          name: "Guest Buyer",
-          role: "BUYER",
-          businessName: "Guest B2B",
-        },
-      });
-
       const created = await tx.order.create({
         data: {
           orderNumber: generateOrderNumber(),
@@ -119,7 +109,7 @@ export async function POST(req: NextRequest) {
           deliveryCity: data.deliveryCity,
           deliveryPincode: data.deliveryPincode,
           notes: data.notes,
-          buyerId: guest.id,
+          buyerId: session.userId,
           items: { create: lines },
         },
       });

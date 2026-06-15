@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -51,6 +52,7 @@ export function UnifiedOrderScreen({
   products: UProduct[];
   categories: { name: string; slug: string }[];
 }) {
+  const router = useRouter();
   const [cart, setCart] = React.useState<Record<string, number>>({});
   const [query, setQuery] = React.useState("");
   const [activeCat, setActiveCat] = React.useState("all");
@@ -89,11 +91,14 @@ export function UnifiedOrderScreen({
     setCart((c) => ({ ...c, [p.id]: p.minOrderQty }));
   }
   function inc(p: UProduct) {
-    setCart((c) => ({ ...c, [p.id]: Math.min((c[p.id] ?? 0) + 1, p.stockQty) }));
+    setCart((c) => ({
+      ...c,
+      [p.id]: Math.min((c[p.id] ?? 0) + p.minOrderQty, p.stockQty),
+    }));
   }
   function dec(p: UProduct) {
     setCart((c) => {
-      const next = (c[p.id] ?? 0) - 1;
+      const next = (c[p.id] ?? 0) - p.minOrderQty;
       const copy = { ...c };
       if (next < p.minOrderQty) delete copy[p.id];
       else copy[p.id] = next;
@@ -133,6 +138,10 @@ export function UnifiedOrderScreen({
           notes: paymentRef ? `Paid online · ${paymentRef}` : undefined,
         }),
       });
+      if (res.status === 401) {
+        router.push("/login?callbackUrl=/");
+        return;
+      }
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Could not place order.");
@@ -185,66 +194,76 @@ export function UnifiedOrderScreen({
       <div className="mx-4 mt-3 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 p-4 text-white">
         <p className="text-sm font-bold">Wholesale fruits &amp; veggies 🥦</p>
         <p className="mt-0.5 text-xs text-white/85">
-          Add items, place your B2B order — no login needed.
+          Prices per kg · order in bulk · pay COD, credit or online.
         </p>
       </div>
 
-      {/* Grid */}
+      {/* Single-column product list */}
       {visible.length === 0 ? (
         <p className="px-4 py-16 text-center text-sm text-gray-500">
           No items found.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3 px-4 py-3">
+        <div className="space-y-3 px-4 py-3">
           {visible.map((p) => {
             const qty = cart[p.id] ?? 0;
             return (
               <div
                 key={p.id}
-                className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
+                className="flex gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm"
               >
-                <div className="relative aspect-square bg-gray-100">
-                  <SafeImage src={p.image} alt={p.name} fill sizes="50vw" className="object-cover" />
-                  <span className="absolute left-1.5 top-1.5 rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
-                    {p.unit}
-                  </span>
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                  <SafeImage src={p.image} alt={p.name} fill sizes="96px" className="object-cover" />
                 </div>
-                <div className="flex flex-1 flex-col p-2.5">
-                  <h3 className="line-clamp-2 text-[13px] font-semibold leading-tight text-gray-900">
+
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <h3 className="text-sm font-bold leading-tight text-gray-900">
                     {p.name}
                   </h3>
                   {p.origin && (
-                    <p className="mt-0.5 flex items-center gap-0.5 text-[10px] text-gray-400">
-                      <MapPin className="h-2.5 w-2.5" />
+                    <p className="mt-0.5 flex items-center gap-0.5 text-[11px] text-gray-400">
+                      <MapPin className="h-3 w-3" />
                       <span className="truncate">{p.origin}</span>
                     </p>
                   )}
-                  <div className="mt-auto flex items-end justify-between pt-2">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">
-                        {formatCurrency(p.pricePerUnit)}
-                      </p>
-                      <p className="text-[10px] text-gray-400">MOQ {p.minOrderQty}</p>
-                    </div>
-                    {qty > 0 ? (
-                      <div className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-1 text-white">
-                        <button onClick={() => dec(p)} className="flex h-7 w-6 items-center justify-center" aria-label="Decrease">
-                          {qty <= p.minOrderQty ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+                  <div className="mt-1.5 flex items-baseline gap-1">
+                    <span className="text-lg font-extrabold text-gray-900">
+                      {formatCurrency(p.pricePerUnit)}
+                    </span>
+                    <span className="text-xs font-medium text-gray-400">/ kg</span>
+                  </div>
+                  <span className="mt-1 w-fit rounded-md bg-brand-50 px-1.5 py-0.5 text-[11px] font-semibold text-brand-700">
+                    Min order {p.minOrderQty} kg
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-end justify-between">
+                  {qty > 0 ? (
+                    <>
+                      <div className="flex items-center gap-1 rounded-lg bg-brand-500 px-1 text-white">
+                        <button onClick={() => dec(p)} className="flex h-8 w-7 items-center justify-center" aria-label="Decrease">
+                          {qty <= p.minOrderQty ? <Trash2 className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
                         </button>
-                        <span className="min-w-4 text-center text-sm font-bold">{qty}</span>
-                        <button onClick={() => inc(p)} disabled={qty >= p.stockQty} className="flex h-7 w-6 items-center justify-center disabled:opacity-50" aria-label="Increase">
-                          <Plus className="h-3.5 w-3.5" />
+                        <span className="min-w-12 text-center text-sm font-bold">{qty} kg</span>
+                        <button onClick={() => inc(p)} disabled={qty + p.minOrderQty > p.stockQty} className="flex h-8 w-7 items-center justify-center disabled:opacity-50" aria-label="Increase">
+                          <Plus className="h-4 w-4" />
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => add(p)}
-                        className="flex h-8 items-center gap-1 rounded-lg border border-brand-500 bg-brand-50 px-3 text-xs font-bold text-brand-700 active:scale-95"
-                      >
-                        <Plus className="h-3.5 w-3.5" /> ADD
-                      </button>
-                    )}
-                  </div>
+                      <span className="mt-1 text-xs font-bold text-gray-900">
+                        {formatCurrency(p.pricePerUnit * qty)}
+                      </span>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => add(p)}
+                      className="flex h-9 items-center gap-1 rounded-lg border border-brand-500 bg-brand-50 px-4 text-sm font-bold text-brand-700 active:scale-95"
+                    >
+                      <Plus className="h-4 w-4" /> ADD
+                    </button>
+                  )}
+                  <span className="mt-1 text-[10px] text-gray-300">
+                    +{p.minOrderQty} kg / tap
+                  </span>
                 </div>
               </div>
             );
@@ -300,8 +319,8 @@ export function UnifiedOrderScreen({
                           <button onClick={() => dec(p)} className="flex h-7 w-6 items-center justify-center">
                             {q <= p.minOrderQty ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                           </button>
-                          <span className="min-w-4 text-center text-sm font-bold">{q}</span>
-                          <button onClick={() => inc(p)} disabled={q >= p.stockQty} className="flex h-7 w-6 items-center justify-center disabled:opacity-50">
+                          <span className="min-w-12 text-center text-sm font-bold">{q} kg</span>
+                          <button onClick={() => inc(p)} disabled={q + p.minOrderQty > p.stockQty} className="flex h-7 w-6 items-center justify-center disabled:opacity-50">
                             <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>

@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { getSession } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "FreshKart — Wholesale B2B Fruits & Veggies",
   description:
-    "Order fresh fruits and vegetables in bulk — a single-screen B2B ordering app.",
+    "Order fresh fruits and vegetables in bulk, priced per kg — a B2B ordering app.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -20,17 +21,19 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+
   return (
     <html lang="en">
       <body className="bg-gray-100">
         {/* Phone-frame app shell — centers a mobile column on larger screens */}
         <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-gray-50 shadow-xl">
-          <AppHeader />
+          <AppHeader session={session} />
           <main className="flex-1">{children}</main>
         </div>
       </body>
