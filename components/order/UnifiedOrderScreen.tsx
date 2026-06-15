@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { SafeImage } from "@/components/ui/SafeImage";
+import { MockPaymentSheet } from "@/components/order/MockPaymentSheet";
 import { formatCurrency } from "@/lib/utils";
 
 export interface UProduct {
@@ -57,6 +58,7 @@ export function UnifiedOrderScreen({
   const [form, setForm] = React.useState(emptyForm);
   const [payment, setPayment] = React.useState("COD");
   const [placing, setPlacing] = React.useState(false);
+  const [showPay, setShowPay] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [placed, setPlaced] = React.useState<{
     orderNumber: string;
@@ -103,12 +105,22 @@ export function UnifiedOrderScreen({
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  async function placeOrder() {
+  function onPlaceClick() {
     setError(null);
     if (Object.values(form).some((v) => !v.trim())) {
       setError("Please fill in all delivery details.");
       return;
     }
+    // online payments go through the mock gateway first
+    if (payment === "ONLINE") {
+      setShowPay(true);
+      return;
+    }
+    void doPlace();
+  }
+
+  async function doPlace(paymentRef?: string) {
+    setShowPay(false);
     setPlacing(true);
     try {
       const res = await fetch("/api/order", {
@@ -118,6 +130,7 @@ export function UnifiedOrderScreen({
           items: entries.map(([productId, quantity]) => ({ productId, quantity })),
           ...form,
           paymentMethod: payment,
+          notes: paymentRef ? `Paid online · ${paymentRef}` : undefined,
         }),
       });
       const data = await res.json();
@@ -353,15 +366,30 @@ export function UnifiedOrderScreen({
               )}
 
               <button
-                onClick={placeOrder}
+                onClick={onPlaceClick}
                 disabled={placing}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white active:scale-[0.99] disabled:opacity-60"
               >
-                {placing ? (<><Loader2 className="h-4 w-4 animate-spin" /> Placing order…</>) : (<>Place B2B order · {formatCurrency(subtotal)}</>)}
+                {placing ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Placing order…</>
+                ) : payment === "ONLINE" ? (
+                  <>Pay {formatCurrency(subtotal)}</>
+                ) : (
+                  <>Place B2B order · {formatCurrency(subtotal)}</>
+                )}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mock payment gateway */}
+      {showPay && (
+        <MockPaymentSheet
+          amount={subtotal}
+          onCancel={() => setShowPay(false)}
+          onPaid={(ref) => doPlace(ref)}
+        />
       )}
 
       {/* Success overlay */}
@@ -378,6 +406,20 @@ export function UnifiedOrderScreen({
           <p className="mt-2 text-sm font-semibold text-gray-900">
             Total {formatCurrency(placed.totalAmount)}
           </p>
+          <span
+            className={
+              "mt-2 rounded-full px-3 py-1 text-xs font-semibold " +
+              (payment === "ONLINE"
+                ? "bg-brand-50 text-brand-700"
+                : "bg-amber-50 text-amber-700")
+            }
+          >
+            {payment === "ONLINE"
+              ? "✓ Paid online"
+              : payment === "CREDIT"
+                ? "Business credit"
+                : "Cash on delivery"}
+          </span>
           <button
             onClick={reset}
             className="mt-7 w-full max-w-xs rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
