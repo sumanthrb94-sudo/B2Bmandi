@@ -3,7 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "B2B Mandi — Wholesale Fresh Produce Marketplace",
@@ -21,9 +21,10 @@ export default async function RootLayout({
   // lightweight cart count for the navbar badge
   let cartCount = 0;
   if (session) {
-    cartCount = await prisma.cartItem.count({
-      where: { userId: session.userId },
-    });
+    cartCount = await safeDb(
+      prisma.cartItem.count({ where: { userId: session.userId } }),
+      0,
+    );
   }
 
   return (

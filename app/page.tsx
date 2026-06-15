@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -68,18 +68,21 @@ const FEATURES = [
 
 export default async function HomePage() {
   const [categories, products] = await Promise.all([
-    prisma.category.findMany(),
-    prisma.product.findMany({
-      where: { isActive: true },
-      include: {
-        category: true,
-        seller: {
-          select: { id: true, name: true, businessName: true, city: true },
+    safeDb(prisma.category.findMany(), []),
+    safeDb(
+      prisma.product.findMany({
+        where: { isActive: true },
+        include: {
+          category: true,
+          seller: {
+            select: { id: true, name: true, businessName: true, city: true },
+          },
         },
-      },
-      take: 8,
-      orderBy: { createdAt: "desc" },
-    }),
+        take: 8,
+        orderBy: { createdAt: "desc" },
+      }),
+      [],
+    ),
   ]);
 
   return (

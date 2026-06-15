@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { PackageSearch } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { prisma, safeDb } from "@/lib/db";
 import { ProductCard } from "@/components/product/ProductCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
@@ -64,22 +64,28 @@ export default async function ProductsPage({
         : { createdAt: "desc" };
 
   const [products, categoriesRaw] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      include: {
-        category: true,
-        seller: {
-          select: { id: true, name: true, businessName: true, city: true },
+    safeDb(
+      prisma.product.findMany({
+        where,
+        orderBy,
+        include: {
+          category: true,
+          seller: {
+            select: { id: true, name: true, businessName: true, city: true },
+          },
         },
-      },
-    }),
-    prisma.category.findMany({
-      orderBy: { name: "asc" },
-      include: {
-        _count: { select: { products: { where: { isActive: true } } } },
-      },
-    }),
+      }),
+      [],
+    ),
+    safeDb(
+      prisma.category.findMany({
+        orderBy: { name: "asc" },
+        include: {
+          _count: { select: { products: { where: { isActive: true } } } },
+        },
+      }),
+      [],
+    ),
   ]);
 
   const categories: CategoryOption[] = categoriesRaw.map((c) => ({

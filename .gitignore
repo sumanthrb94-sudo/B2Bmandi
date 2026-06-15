@@ -31,3 +31,6 @@ yarn-error.log*
 
 # logs
 *.log
+
+# committed-by-mistake guard
+.env

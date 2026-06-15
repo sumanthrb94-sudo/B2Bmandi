@@ -14,4 +14,18 @@ export const prisma =
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
+/**
+ * Run a query but degrade gracefully if the database is unreachable
+ * (e.g. a Vercel deploy before a DATABASE_URL is configured). Returns the
+ * fallback instead of throwing so public pages can still render.
+ */
+export async function safeDb<T>(query: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await query;
+  } catch (err) {
+    console.error("[db] query failed, using fallback:", err);
+    return fallback;
+  }
+}
+
 export default prisma;
