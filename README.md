@@ -119,6 +119,46 @@ npm run dev          # http://localhost:3000
 
 ---
 
+## ▲ Deploy to Vercel
+
+This app is Vercel-ready. You need a **hosted PostgreSQL** (Vercel Postgres,
+Supabase, or Neon — all have free tiers).
+
+1. **Push this repo to GitHub** and import it in Vercel (it auto-detects Next.js;
+   the build command `prisma generate && next build` is already configured).
+
+2. **Create a Postgres database** and grab two connection strings:
+   - a **pooled** URL (for serverless runtime), and
+   - a **direct** URL (for migrations).
+
+   > With Supabase: Project → Settings → Database. Pooled = port **6543** with
+   > `?pgbouncer=true`; direct = port **5432**. With Vercel Postgres / Neon, use
+   > the provided `POSTGRES_PRISMA_URL` (pooled) and `POSTGRES_URL_NON_POOLING`
+   > (direct).
+
+3. **Set environment variables** in Vercel → Project → Settings → Environment
+   Variables:
+
+   | Variable       | Value                                            |
+   |----------------|--------------------------------------------------|
+   | `DATABASE_URL` | pooled connection string                         |
+   | `DIRECT_URL`   | direct connection string                         |
+   | `AUTH_SECRET`  | a long random string (`openssl rand -base64 32`) |
+   | `SEED_SECRET`  | any secret — enables the one-time seed endpoint  |
+
+4. **Deploy.** Then create the tables and seed demo data:
+   ```bash
+   # create tables (run locally with prod DIRECT_URL, or via Vercel CLI)
+   DATABASE_URL="<direct-url>" DIRECT_URL="<direct-url>" npx prisma db push
+
+   # seed demo data via the guarded endpoint (uses SEED_SECRET)
+   curl -X POST "https://<your-app>.vercel.app/api/seed?secret=<SEED_SECRET>"
+   ```
+   The seed endpoint returns 404 unless `SEED_SECRET` is set, so it's safe to
+   leave in. Remove the `SEED_SECRET` env var afterwards to disable it.
+
+---
+
 ## 🔐 Demo accounts
 
 All passwords are `password123`.
