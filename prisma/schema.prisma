@@ -117,6 +117,7 @@ model Order {
   deliveryCity    String
   deliveryPincode String
   notes           String?
+  razorpayPaymentId String? @unique
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

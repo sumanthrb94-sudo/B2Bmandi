@@ -78,6 +78,7 @@ CREATE TABLE "Order" (
     "deliveryCity" TEXT NOT NULL,
     "deliveryPincode" TEXT NOT NULL,
     "notes" TEXT,
+    "razorpayPaymentId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "buyerId" TEXT NOT NULL,
@@ -132,6 +133,9 @@ CREATE UNIQUE INDEX "CartItem_userId_productId_key" ON "CartItem"("userId", "pro
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Order_orderNumber_key" ON "Order"("orderNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Order_razorpayPaymentId_key" ON "Order"("razorpayPaymentId");
 
 -- CreateIndex
 CREATE INDEX "Order_buyerId_idx" ON "Order"("buyerId");

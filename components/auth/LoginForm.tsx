@@ -15,6 +15,20 @@ const DEMO_ACCOUNTS = [
 
 const DEMO_PASSWORD = "password123";
 
+/**
+ * Only allow same-origin relative paths as a redirect target. Anything that
+ * could navigate off-site (absolute URLs, protocol-relative `//host`, schemes,
+ * backslashes) is rejected and falls back to `/`.
+ */
+function sanitizeCallbackUrl(url?: string): string {
+  if (!url) return "/";
+  // must start with a single slash, not `//`, and contain no scheme/colon/backslash
+  if (!/^\/(?!\/)/.test(url) || url.includes(":") || url.includes("\\")) {
+    return "/";
+  }
+  return url;
+}
+
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter();
   const [email, setEmail] = React.useState("");
@@ -42,7 +56,8 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       }
       // admins land on the dashboard; everyone else on the shop (or callback)
       const isAdmin = data.user?.role === "ADMIN";
-      const dest = isAdmin ? "/admin" : callbackUrl || "/";
+      const safeCallback = sanitizeCallbackUrl(callbackUrl);
+      const dest = isAdmin ? "/admin" : safeCallback;
       // keep a loading ring on screen until the destination finishes loading
       setDestLabel(isAdmin ? "Loading dashboard…" : "Loading your shop…");
       setRedirecting(true);
@@ -101,38 +116,40 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         </Button>
       </form>
 
-      <div className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-          Demo accounts
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          Password for all:{" "}
-          <span className="font-mono font-medium text-gray-700">
-            {DEMO_PASSWORD}
-          </span>
-        </p>
-        <div className="mt-3 space-y-2">
-          {DEMO_ACCOUNTS.map((acc) => (
-            <div
-              key={acc.email}
-              className="flex items-center justify-between gap-2 rounded-md bg-white px-3 py-2 text-sm shadow-sm"
-            >
-              <span className="min-w-0">
-                <span className="font-medium text-gray-900">{acc.label}</span>{" "}
-                <span className="truncate text-gray-500">{acc.email}</span>
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fill(acc.email)}
+      {process.env.NODE_ENV !== "production" && (
+        <div className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+            Demo accounts
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            Password for all:{" "}
+            <span className="font-mono font-medium text-gray-700">
+              {DEMO_PASSWORD}
+            </span>
+          </p>
+          <div className="mt-3 space-y-2">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <div
+                key={acc.email}
+                className="flex items-center justify-between gap-2 rounded-md bg-white px-3 py-2 text-sm shadow-sm"
               >
-                Fill
-              </Button>
-            </div>
-          ))}
+                <span className="min-w-0">
+                  <span className="font-medium text-gray-900">{acc.label}</span>{" "}
+                  <span className="truncate text-gray-500">{acc.email}</span>
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fill(acc.email)}
+                >
+                  Fill
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <p className="text-center text-sm text-gray-600">
         New to FreshKart?{" "}

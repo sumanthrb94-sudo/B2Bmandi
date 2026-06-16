@@ -10,7 +10,6 @@ const registerSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["BUYER", "SELLER"]),
   businessName: z.string().trim().max(120).optional().or(z.literal("")),
   phone: z.string().trim().max(20).optional().or(z.literal("")),
   city: z.string().trim().max(80).optional().or(z.literal("")),
@@ -35,8 +34,7 @@ export async function POST(req: Request) {
     return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
   }
 
-  const { name, email, password, role, businessName, phone, city } =
-    parsed.data;
+  const { name, email, password, businessName, phone, city } = parsed.data;
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -51,7 +49,8 @@ export async function POST(req: Request) {
         name,
         email,
         password: password_hash,
-        role,
+        // Sellers are provisioned by admins, never via public registration.
+        role: "BUYER",
         businessName: businessName || null,
         phone: phone || null,
         city: city || null,

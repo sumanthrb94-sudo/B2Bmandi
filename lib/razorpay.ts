@@ -68,6 +68,48 @@ export async function createRazorpayOrder(
 }
 
 /**
+ * Fetch a Razorpay order by id. Used to bind a verified payment to the amount
+ * actually charged: the caller asserts `status === "paid"` and that `amount`
+ * matches the server-recomputed total. Uses the same Basic auth (key_id:secret,
+ * base64) as {@link createRazorpayOrder}. Throws on a non-2xx response.
+ */
+export async function fetchRazorpayOrder(
+  orderId: string,
+): Promise<{ id: string; amount: number; amount_paid: number; status: string }> {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay is not configured.");
+  }
+
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  const res = await fetch(
+    `https://api.razorpay.com/v1/orders/${orderId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(
+      `Razorpay order fetch failed (${res.status}): ${detail}`,
+    );
+  }
+
+  return (await res.json()) as {
+    id: string;
+    amount: number;
+    amount_paid: number;
+    status: string;
+  };
+}
+
+/**
  * Verify a Razorpay payment signature using HMAC-SHA256 over
  * `${orderId}|${paymentId}` keyed by the secret. Timing-safe comparison.
  */

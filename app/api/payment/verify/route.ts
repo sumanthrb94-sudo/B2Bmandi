@@ -3,7 +3,8 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
 import { ok, fail, readJson } from "@/lib/api";
-import { verifyRazorpaySignature } from "@/lib/razorpay";
+import { Prisma } from "@prisma/client";
+import { fetchRazorpayOrder, verifyRazorpaySignature } from "@/lib/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +36,14 @@ class OutOfStock extends Error {
 }
 
 /**
- * Confirm an online payment. Verifies the Razorpay signature, then creates the
- * local Order using the same atomic-stock transaction as /api/order. The
- * Razorpay payment id is persisted in the existing `notes` field — no schema
- * change. The amount is recomputed server-side, never trusted from the client.
+ * Confirm an online payment. Verifies the Razorpay signature, then BINDS the
+ * order to the amount actually charged by fetching the Razorpay order and
+ * asserting it is `paid` and its amount equals the server-recomputed total
+ * (a user who paid ₹35 cannot claim ₹2,500 of goods). Creates the local Order
+ * using the same atomic-stock transaction as /api/order. The Razorpay payment
+ * id is stored in the unique `razorpayPaymentId` column as a replay guard, so
+ * the same payment can mint at most one order. The amount is recomputed
+ * server-side, never trusted from the client.
  */
 export async function POST(req: Request) {
   const session = await getSession();
@@ -101,6 +106,18 @@ export async function POST(req: Request) {
       });
     }
 
+    // Bind the verified payment to the amount actually charged. The Razorpay
+    // order must be fully paid and its amount (in paise) must equal the
+    // server-recomputed total — otherwise the client is claiming more goods
+    // than were paid for.
+    const rzpOrder = await fetchRazorpayOrder(data.razorpay_order_id);
+    if (
+      rzpOrder.status !== "paid" ||
+      rzpOrder.amount !== Math.round(total * 100)
+    ) {
+      return fail("Payment amount mismatch.", 400);
+    }
+
     const order = await prisma.$transaction(async (tx) => {
       for (const line of lines) {
         const res = await tx.product.updateMany({
@@ -126,6 +143,7 @@ export async function POST(req: Request) {
           deliveryCity: data.deliveryCity,
           deliveryPincode: data.deliveryPincode,
           notes: "Paid online · rzp " + data.razorpay_payment_id,
+          razorpayPaymentId: data.razorpay_payment_id,
           buyerId: session.userId,
           items: { create: lines },
         },
@@ -142,6 +160,13 @@ export async function POST(req: Request) {
   } catch (err) {
     if (err instanceof OutOfStock) {
       return fail(`${err.productName} is out of stock.`, 409);
+    }
+    // Duplicate razorpayPaymentId → this payment was already used for an order.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      return fail("This payment has already been processed.", 409);
     }
     return fail("Could not finalize order. Please try again.", 500);
   }

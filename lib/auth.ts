@@ -37,7 +37,7 @@ export interface SessionPayload {
 
 // ---------- password helpers ----------
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+  return bcrypt.hash(password, 12);
 }
 
 export async function verifyPassword(

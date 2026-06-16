@@ -341,7 +341,7 @@ export function UnifiedOrderScreen({
       <div className="mx-4 mt-3 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 p-4 text-white">
         <p className="text-sm font-bold">Wholesale fruits &amp; veggies 🥦</p>
         <p className="mt-0.5 text-xs text-white/85">
-          Prices per kg · order in bulk · pay COD, credit or online.
+          Live B2B rates · order in bulk · pay COD, credit or online.
         </p>
       </div>
 
@@ -377,10 +377,10 @@ export function UnifiedOrderScreen({
                     <span className="text-lg font-extrabold text-gray-900">
                       {formatCurrency(p.pricePerUnit)}
                     </span>
-                    <span className="text-xs font-medium text-gray-400">/ kg</span>
+                    <span className="text-xs font-medium text-gray-400">/ {p.unit}</span>
                   </div>
                   <span className="mt-1 w-fit rounded-md bg-brand-50 px-1.5 py-0.5 text-[11px] font-semibold text-brand-700">
-                    Min order {p.minOrderQty} kg
+                    Min order {p.minOrderQty} {p.unit}
                   </span>
                 </div>
 
@@ -391,7 +391,7 @@ export function UnifiedOrderScreen({
                         <button onClick={() => dec(p)} className="flex h-8 w-7 items-center justify-center" aria-label="Decrease">
                           {qty <= p.minOrderQty ? <Trash2 className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
                         </button>
-                        <span className="min-w-12 text-center text-sm font-bold">{qty} kg</span>
+                        <span className="min-w-12 text-center text-sm font-bold">{qty} {p.unit}</span>
                         <button onClick={() => inc(p)} disabled={qty + p.minOrderQty > p.stockQty} className="flex h-8 w-7 items-center justify-center disabled:opacity-50" aria-label="Increase">
                           <Plus className="h-4 w-4" />
                         </button>
@@ -409,7 +409,7 @@ export function UnifiedOrderScreen({
                     </button>
                   )}
                   <span className="mt-1 text-[10px] text-gray-300">
-                    +{p.minOrderQty} kg / tap
+                    +{p.minOrderQty} {p.unit} / tap
                   </span>
                 </div>
               </div>
@@ -466,7 +466,7 @@ export function UnifiedOrderScreen({
                           <button onClick={() => dec(p)} className="flex h-7 w-6 items-center justify-center">
                             {q <= p.minOrderQty ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                           </button>
-                          <span className="min-w-12 text-center text-sm font-bold">{q} kg</span>
+                          <span className="min-w-12 text-center text-sm font-bold">{q} {p.unit}</span>
                           <button onClick={() => inc(p)} disabled={q + p.minOrderQty > p.stockQty} className="flex h-7 w-6 items-center justify-center disabled:opacity-50">
                             <Plus className="h-3.5 w-3.5" />
                           </button>
