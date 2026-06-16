@@ -12,25 +12,26 @@ export default async function AdminCustomersPage() {
   if (!session) redirect("/login?callbackUrl=/admin");
   if (session.role !== "ADMIN") redirect("/");
 
-  const customers = await prisma.user.findMany({
-    where: { role: "BUYER" },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      businessName: true,
-      phone: true,
-      city: true,
-    },
-  });
-
-  // Aggregate order count + total spent (non-cancelled) per buyer.
-  const grouped = await prisma.order.groupBy({
-    by: ["buyerId"],
-    where: { status: { not: "CANCELLED" } },
-    _count: { _all: true },
-    _sum: { totalAmount: true },
-  });
+  const [customers, grouped] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: "BUYER" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        businessName: true,
+        phone: true,
+        city: true,
+      },
+    }),
+    // Aggregate order count + total spent (non-cancelled) per buyer.
+    prisma.order.groupBy({
+      by: ["buyerId"],
+      where: { status: { not: "CANCELLED" } },
+      _count: { _all: true },
+      _sum: { totalAmount: true },
+    }),
+  ]);
   const stats = new Map(
     grouped.map((g) => [
       g.buyerId,
