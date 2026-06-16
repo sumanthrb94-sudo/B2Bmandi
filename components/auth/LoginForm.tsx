@@ -9,11 +9,9 @@ import { Input, Field } from "@/components/ui/Input";
 import { FullScreenLoader } from "@/components/ui/FullScreenLoader";
 
 const DEMO_ACCOUNTS = [
-  { label: "Customer", email: "buyer@kirana.com" },
-  { label: "Admin", email: "admin@b2bmandi.com" },
+  { label: "Customer", email: "customer@freshkart.in" },
+  { label: "Admin", email: "admin@freshkart.in" },
 ] as const;
-
-const DEMO_PASSWORD = "password123";
 
 /**
  * Only allow same-origin relative paths as a redirect target. Anything that
@@ -71,7 +69,6 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 
   function fill(demoEmail: string) {
     setEmail(demoEmail);
-    setPassword(DEMO_PASSWORD);
     setError(null);
   }
 
@@ -119,13 +116,10 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       {process.env.NODE_ENV !== "production" && (
         <div className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            Demo accounts
+            Demo accounts (dev)
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            Password for all:{" "}
-            <span className="font-mono font-medium text-gray-700">
-              {DEMO_PASSWORD}
-            </span>
+            Tap to fill the email, then enter the password you were given.
           </p>
           <div className="mt-3 space-y-2">
             {DEMO_ACCOUNTS.map((acc) => (

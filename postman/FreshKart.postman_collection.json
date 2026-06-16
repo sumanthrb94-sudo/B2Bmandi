@@ -85,8 +85,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
             }
           }
         }
@@ -144,8 +149,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/products",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "products"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
             }
           }
         },
@@ -174,8 +184,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/products/{{slug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "products", "{{slug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{slug}}"
+              ]
             }
           }
         },
@@ -199,8 +215,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/products/zzz-nope",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "products", "zzz-nope"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "zzz-nope"
+              ]
             }
           }
         },
@@ -229,8 +251,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
             }
           }
         }
@@ -257,16 +284,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"buyer@kirana.com\",\n  \"password\": \"wrong-password\"\n}"
+              "raw": "{\"email\": \"customer@freshkart.in\", \"password\": \"definitely-wrong-password\"}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -296,16 +332,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"buyer@kirana.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\"email\": \"customer@freshkart.in\", \"password\": \"{{customerPassword}}\"}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -323,7 +368,7 @@
                   "var json = pm.response.json();",
                   "pm.test('returns current user', function () {",
                   "  pm.expect(json).to.have.property('user');",
-                  "  pm.expect(json.user.email).to.eql('buyer@kirana.com');",
+                  "  pm.expect(json.user.email).to.eql('customer@freshkart.in');",
                   "});"
                 ]
               }
@@ -334,8 +379,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         }
@@ -362,7 +413,10 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -370,8 +424,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/order",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "order"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "order"
+              ]
             }
           }
         },
@@ -401,7 +460,10 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -409,8 +471,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/order",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "order"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "order"
+              ]
             }
           }
         },
@@ -443,8 +510,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
             }
           }
         },
@@ -473,8 +545,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "{{orderId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{orderId}}"
+              ]
             }
           }
         }
@@ -501,7 +579,10 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -509,8 +590,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "admin", "products", "{{productId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "products",
+                "{{productId}}"
+              ]
             }
           }
         }
@@ -542,16 +630,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@b2bmandi.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\"email\": \"admin@freshkart.in\", \"password\": \"{{adminPassword}}\"}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -578,7 +675,10 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -586,8 +686,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/admin/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "admin", "orders", "{{orderId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
             }
           }
         },
@@ -614,7 +721,10 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -622,8 +732,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "admin", "products", "{{productId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "products",
+                "{{productId}}"
+              ]
             }
           }
         },
@@ -645,7 +762,10 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -653,8 +773,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/admin/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "admin", "orders", "{{orderId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
             }
           }
         }
@@ -683,8 +810,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             }
           }
         },
@@ -708,8 +841,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         }
