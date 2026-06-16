@@ -45,6 +45,45 @@ const emptyForm = {
   deliveryPincode: "",
 };
 
+const RAZORPAY_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, cb: (err: unknown) => void) => void;
+    };
+  }
+}
+
+/** Inject the Razorpay checkout script once and resolve when it's ready. */
+function loadRazorpay(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if (window.Razorpay) return resolve(true);
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${RAZORPAY_SRC}"]`,
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve(true));
+      existing.addEventListener("error", () => resolve(false));
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SRC;
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export function UnifiedOrderScreen({
   products,
   categories,
@@ -116,12 +155,120 @@ export function UnifiedOrderScreen({
       setError("Please fill in all delivery details.");
       return;
     }
-    // online payments go through the mock gateway first
     if (payment === "ONLINE") {
-      setShowPay(true);
+      void startOnlinePayment();
       return;
     }
     void doPlace();
+  }
+
+  const orderItems = () =>
+    entries.map(([productId, quantity]) => ({ productId, quantity }));
+
+  /**
+   * Online payment entry point. Asks the server to start a payment: if Razorpay
+   * is configured we open its checkout and verify server-side; otherwise we fall
+   * back to the existing mock gateway sheet + /api/order.
+   */
+  async function startOnlinePayment() {
+    setPlacing(true);
+    try {
+      const res = await fetch("/api/payment/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: orderItems(),
+          ...form,
+          paymentMethod: "ONLINE",
+        }),
+      });
+      if (res.status === 401) {
+        router.push("/login?callbackUrl=/");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not start payment.");
+        setPlacing(false);
+        return;
+      }
+
+      // No real gateway configured → use the existing mock flow.
+      if (!data.configured) {
+        setPlacing(false);
+        setShowPay(true);
+        return;
+      }
+
+      const loaded = await loadRazorpay();
+      if (!loaded || !window.Razorpay) {
+        setError("Could not load the payment gateway. Please try again.");
+        setPlacing(false);
+        return;
+      }
+
+      const rzp = new window.Razorpay({
+        key: data.keyId,
+        order_id: data.razorpayOrderId,
+        amount: data.amount,
+        currency: data.currency,
+        name: data.name,
+        description: data.description,
+        prefill: data.prefill,
+        handler: async (resp: RazorpayResponse) => {
+          await verifyOnlinePayment(resp);
+        },
+        modal: {
+          ondismiss: () => {
+            // User closed checkout — re-enable the button.
+            setPlacing(false);
+            setError("Payment was cancelled.");
+          },
+        },
+      });
+      rzp.on("payment.failed", () => {
+        setPlacing(false);
+        setError("Payment failed. Please try again.");
+      });
+      rzp.open();
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setPlacing(false);
+    }
+  }
+
+  /** Confirm a Razorpay payment server-side and show the success overlay. */
+  async function verifyOnlinePayment(resp: RazorpayResponse) {
+    try {
+      const res = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: resp.razorpay_order_id,
+          razorpay_payment_id: resp.razorpay_payment_id,
+          razorpay_signature: resp.razorpay_signature,
+          items: orderItems(),
+          ...form,
+        }),
+      });
+      if (res.status === 401) {
+        router.push("/login?callbackUrl=/");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not confirm payment.");
+        setPlacing(false);
+        return;
+      }
+      setPlaced(data.order);
+      setCart({});
+      setSheetOpen(false);
+    } catch {
+      setError("Something went wrong confirming your payment.");
+    } finally {
+      setPlacing(false);
+    }
   }
 
   async function doPlace(paymentRef?: string) {

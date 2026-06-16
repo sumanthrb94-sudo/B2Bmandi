@@ -3,16 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, ShoppingBag, Sprout } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Field } from "@/components/ui/Input";
-import { cn } from "@/lib/utils";
 
-type Role = "BUYER" | "SELLER";
-
-export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) {
+// `defaultRole` is accepted for backwards-compat with existing callers but is
+// ignored — registration always creates a BUYER (sellers are managed by Admin).
+export function RegisterForm({ defaultRole: _defaultRole }: { defaultRole?: string } = {}) {
   const router = useRouter();
-  const [role, setRole] = React.useState<Role>(defaultRole);
   const [name, setName] = React.useState("");
   const [businessName, setBusinessName] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -37,7 +35,7 @@ export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) 
           phone,
           city,
           password,
-          role,
+          role: "BUYER",
         }),
       });
       const data = await res.json();
@@ -45,7 +43,7 @@ export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) 
         setError(data.error ?? "Unable to create account");
         return;
       }
-      router.push(role === "SELLER" ? "/seller" : "/");
+      router.push("/");
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
@@ -62,29 +60,6 @@ export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) 
         </div>
       )}
 
-      {/* Role toggle */}
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium text-gray-700">
-          I want to…
-        </legend>
-        <div className="grid grid-cols-2 gap-3">
-          <RoleOption
-            active={role === "BUYER"}
-            onClick={() => setRole("BUYER")}
-            icon={<ShoppingBag className="h-5 w-5" />}
-            title="Buy wholesale"
-            subtitle="I want to buy wholesale"
-          />
-          <RoleOption
-            active={role === "SELLER"}
-            onClick={() => setRole("SELLER")}
-            icon={<Sprout className="h-5 w-5" />}
-            title="Sell produce"
-            subtitle="I want to sell produce"
-          />
-        </div>
-      </fieldset>
-
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Full name" htmlFor="name">
           <Input
@@ -96,16 +71,11 @@ export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) 
             onChange={(e) => setName(e.target.value)}
           />
         </Field>
-        <Field
-          label={role === "SELLER" ? "Business / farm name" : "Business name"}
-          htmlFor="businessName"
-        >
+        <Field label="Business name" htmlFor="businessName">
           <Input
             id="businessName"
             autoComplete="organization"
-            placeholder={
-              role === "SELLER" ? "Green Farms" : "Sharma Kirana Store"
-            }
+            placeholder="Sharma Kirana Store"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
           />
@@ -174,44 +144,5 @@ export function RegisterForm({ defaultRole = "BUYER" }: { defaultRole?: Role }) 
         </Link>
       </p>
     </form>
-  );
-}
-
-function RoleOption({
-  active,
-  onClick,
-  icon,
-  title,
-  subtitle,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left transition-colors",
-        active
-          ? "border-brand-500 bg-brand-50"
-          : "border-gray-200 bg-white hover:border-gray-300",
-      )}
-    >
-      <span
-        className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg",
-          active ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-500",
-        )}
-      >
-        {icon}
-      </span>
-      <span className="text-sm font-semibold text-gray-900">{title}</span>
-      <span className="text-xs text-gray-500">{subtitle}</span>
-    </button>
   );
 }

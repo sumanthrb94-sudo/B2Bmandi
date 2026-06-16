@@ -3,10 +3,14 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
 import { ok, fail, readJson } from "@/lib/api";
+import { verifyRazorpaySignature } from "@/lib/razorpay";
 
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
+  razorpay_order_id: z.string().min(1),
+  razorpay_payment_id: z.string().min(1),
+  razorpay_signature: z.string().min(1),
   items: z
     .array(
       z.object({
@@ -20,8 +24,6 @@ const schema = z.object({
   deliveryAddress: z.string().min(1),
   deliveryCity: z.string().min(1),
   deliveryPincode: z.string().min(1),
-  paymentMethod: z.string().default("COD"),
-  notes: z.string().optional(),
 });
 
 /** Thrown when an item cannot be reserved at the required quantity. */
@@ -33,19 +35,15 @@ class OutOfStock extends Error {
 }
 
 /**
- * Order placement for the unified B2B order screen (COD / CREDIT and the
- * mock-online fallback). Requires a logged-in user.
- *
- * Overselling fix: products are loaded only to snapshot price/name; the real
- * stock guard is an ATOMIC conditional updateMany inside the transaction. The
- * decrement only applies while `stockQty >= quantity`, so two concurrent orders
- * can never drive stock negative — a row count other than 1 means the guard lost
- * the race and we abort with OutOfStock.
+ * Confirm an online payment. Verifies the Razorpay signature, then creates the
+ * local Order using the same atomic-stock transaction as /api/order. The
+ * Razorpay payment id is persisted in the existing `notes` field — no schema
+ * change. The amount is recomputed server-side, never trusted from the client.
  */
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
-    return fail("Please log in to place an order.", 401);
+    return fail("Please log in to continue.", 401);
   }
 
   const body = await readJson<unknown>(req);
@@ -55,15 +53,20 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return fail(
-      "Please complete all delivery details and add at least one item.",
-      400,
-    );
+    return fail("Invalid payment confirmation.", 400);
   }
   const data = parsed.data;
 
+  const valid = verifyRazorpaySignature(
+    data.razorpay_order_id,
+    data.razorpay_payment_id,
+    data.razorpay_signature,
+  );
+  if (!valid) {
+    return fail("Payment verification failed.", 400);
+  }
+
   try {
-    // Load referenced products to build price/snapshot lines (not the guard).
     const ids = data.items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: ids }, isActive: true },
@@ -99,7 +102,6 @@ export async function POST(req: Request) {
     }
 
     const order = await prisma.$transaction(async (tx) => {
-      // Atomic stock reservation — guards against overselling.
       for (const line of lines) {
         const res = await tx.product.updateMany({
           where: {
@@ -117,13 +119,13 @@ export async function POST(req: Request) {
           orderNumber: generateOrderNumber(),
           status: "PENDING",
           totalAmount: total,
-          paymentMethod: data.paymentMethod,
+          paymentMethod: "ONLINE",
           deliveryName: data.deliveryName,
           deliveryPhone: data.deliveryPhone,
           deliveryAddress: data.deliveryAddress,
           deliveryCity: data.deliveryCity,
           deliveryPincode: data.deliveryPincode,
-          notes: data.notes,
+          notes: "Paid online · rzp " + data.razorpay_payment_id,
           buyerId: session.userId,
           items: { create: lines },
         },
@@ -141,6 +143,6 @@ export async function POST(req: Request) {
     if (err instanceof OutOfStock) {
       return fail(`${err.productName} is out of stock.`, 409);
     }
-    return fail("Could not place order. Please try again.", 500);
+    return fail("Could not finalize order. Please try again.", 500);
   }
 }

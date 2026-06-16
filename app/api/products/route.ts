@@ -12,6 +12,15 @@ export async function GET(req: Request) {
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
 
+  const rawLimit = Number(searchParams.get("limit"));
+  const take =
+    Number.isFinite(rawLimit) && rawLimit > 0
+      ? Math.min(Math.floor(rawLimit), 100)
+      : 60;
+  const rawOffset = Number(searchParams.get("offset"));
+  const skip =
+    Number.isFinite(rawOffset) && rawOffset > 0 ? Math.floor(rawOffset) : 0;
+
   const where: Prisma.ProductWhereInput = { isActive: true };
 
   if (q) {
@@ -54,6 +63,8 @@ export async function GET(req: Request) {
     const products = await prisma.product.findMany({
       where,
       orderBy,
+      take,
+      skip,
       include: {
         category: true,
         seller: {

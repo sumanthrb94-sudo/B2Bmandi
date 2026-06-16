@@ -5,9 +5,26 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./db";
 import type { Role, User } from "@prisma/client";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "dev-secret-change-me",
-);
+/**
+ * Lazily resolve the signing secret so we never throw at module-import time
+ * (which would crash `next build`). In production a missing/empty AUTH_SECRET
+ * fails closed; in dev we fall back so local development works.
+ */
+let cachedSecret: Uint8Array | null = null;
+function getSecret(): Uint8Array {
+  if (cachedSecret) return cachedSecret;
+  const value = process.env.AUTH_SECRET;
+  if (!value) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_SECRET must be set in production");
+    }
+    cachedSecret = new TextEncoder().encode("dev-secret-change-me");
+    return cachedSecret;
+  }
+  cachedSecret = new TextEncoder().encode(value);
+  return cachedSecret;
+}
+
 const COOKIE_NAME = "b2b_session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
@@ -36,7 +53,7 @@ export async function createSession(payload: SessionPayload): Promise<void> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${MAX_AGE}s`)
-    .sign(SECRET);
+    .sign(getSecret());
 
   cookies().set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -55,7 +72,7 @@ export async function getSession(): Promise<SessionPayload | null> {
   const token = cookies().get(COOKIE_NAME)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, getSecret());
     return payload as unknown as SessionPayload;
   } catch {
     return null;

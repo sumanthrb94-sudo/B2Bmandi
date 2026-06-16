@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sprout, LayoutDashboard, LogOut, Package, LogIn } from "lucide-react";
+import { Sprout, LayoutDashboard, LogOut, Package, LogIn, User } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 
 export function AppHeader({ session }: { session: SessionPayload | null }) {
@@ -43,6 +43,13 @@ export function AppHeader({ session }: { session: SessionPayload | null }) {
             aria-label="My orders"
           >
             <Package className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/account"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15"
+            aria-label="My account"
+          >
+            <User className="h-4 w-4" />
           </Link>
           <button
             onClick={logout}

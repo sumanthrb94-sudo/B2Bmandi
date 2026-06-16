@@ -11,17 +11,29 @@ const orderItemInclude = {
 } as const;
 
 // GET — current user's orders (as buyer), newest-first, with items
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getSession();
   if (!session) {
     return fail("Not authenticated", 401);
   }
+
+  const { searchParams } = new URL(req.url);
+  const rawLimit = Number(searchParams.get("limit"));
+  const take =
+    Number.isFinite(rawLimit) && rawLimit > 0
+      ? Math.min(Math.floor(rawLimit), 100)
+      : 20;
+  const rawOffset = Number(searchParams.get("offset"));
+  const skip =
+    Number.isFinite(rawOffset) && rawOffset > 0 ? Math.floor(rawOffset) : 0;
 
   try {
     const orders = await prisma.order.findMany({
       where: { buyerId: session.userId },
       include: orderItemInclude,
       orderBy: { createdAt: "desc" },
+      take,
+      skip,
     });
 
     return ok({ orders });

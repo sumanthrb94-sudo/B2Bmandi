@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Package, Store } from "lucide-react";
+import { Package } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { AccountForm } from "@/components/cart/AccountForm";
@@ -11,7 +10,7 @@ import type { SafeUser } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Your Account — B2B Mandi",
+  title: "Your Account — FreshKart",
 };
 
 export default async function AccountPage() {
@@ -19,56 +18,30 @@ export default async function AccountPage() {
   if (!user) redirect("/login?callbackUrl=/account");
 
   const { password: _omit, ...safeUser } = user;
-  const isSeller = user.role === "SELLER" || user.role === "ADMIN";
 
   return (
-    <div className="container-app py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 sm:text-3xl">
-        Your Account
-      </h1>
+    <div className="px-5 py-6">
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">Your account</h1>
+        <Badge className="bg-brand-100 text-brand-800">{user.role}</Badge>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Profile</h2>
-              <Badge className="bg-brand-100 text-brand-800">
-                {user.role}
-              </Badge>
-            </CardHeader>
-            <CardBody>
-              <AccountForm user={safeUser as SafeUser} />
-            </CardBody>
-          </Card>
-        </div>
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold text-gray-900">
+          Profile details
+        </h2>
+        <AccountForm user={safeUser as SafeUser} />
+      </div>
 
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-gray-900">Quick links</h2>
-            </CardHeader>
-            <CardBody className="space-y-3">
-              <ButtonLink
-                href="/orders"
-                variant="outline"
-                className="w-full justify-start"
-              >
-                <Package className="h-4 w-4" />
-                Your orders
-              </ButtonLink>
-              {isSeller && (
-                <ButtonLink
-                  href="/seller"
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <Store className="h-4 w-4" />
-                  Seller dashboard
-                </ButtonLink>
-              )}
-            </CardBody>
-          </Card>
-        </div>
+      <div className="mt-5">
+        <ButtonLink
+          href="/orders"
+          variant="outline"
+          className="w-full justify-center"
+        >
+          <Package className="h-4 w-4" />
+          Your orders
+        </ButtonLink>
       </div>
     </div>
   );
