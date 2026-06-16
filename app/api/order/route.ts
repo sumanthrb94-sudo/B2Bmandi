@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
+import { ok, fail, readJson } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -28,74 +28,69 @@ const schema = z.object({
  * Order placement for the unified B2B order screen. Requires a logged-in user;
  * the order is recorded under their account. Validates stock in a transaction.
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Please log in to place an order." }, { status: 401 });
+    return fail("Please log in to place an order.", 401);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Please complete all delivery details and add at least one item." },
-      { status: 400 },
+    return fail(
+      "Please complete all delivery details and add at least one item.",
+      400,
     );
   }
   const data = parsed.data;
 
-  // Load all referenced products.
-  const ids = data.items.map((i) => i.productId);
-  const products = await prisma.product.findMany({
-    where: { id: { in: ids }, isActive: true },
-  });
-  const byId = new Map(products.map((p) => [p.id, p]));
-
-  // Validate + compute lines.
-  const lines: {
-    productId: string;
-    productName: string;
-    unit: string;
-    unitPrice: number;
-    quantity: number;
-    lineTotal: number;
-    sellerId: string;
-  }[] = [];
-  let total = 0;
-  for (const item of data.items) {
-    const product = byId.get(item.productId);
-    if (!product) {
-      return NextResponse.json(
-        { error: "One of the items is no longer available." },
-        { status: 409 },
-      );
-    }
-    if (item.quantity > product.stockQty) {
-      return NextResponse.json(
-        { error: `Only ${product.stockQty} ${product.unit} of ${product.name} left.` },
-        { status: 409 },
-      );
-    }
-    const lineTotal = product.pricePerUnit * item.quantity;
-    total += lineTotal;
-    lines.push({
-      productId: product.id,
-      productName: product.name,
-      unit: product.unit,
-      unitPrice: product.pricePerUnit,
-      quantity: item.quantity,
-      lineTotal,
-      sellerId: product.sellerId,
-    });
-  }
-
   try {
+    // Load all referenced products.
+    const ids = data.items.map((i) => i.productId);
+    const products = await prisma.product.findMany({
+      where: { id: { in: ids }, isActive: true },
+    });
+    const byId = new Map(products.map((p) => [p.id, p]));
+
+    // Validate + compute lines.
+    const lines: {
+      productId: string;
+      productName: string;
+      unit: string;
+      unitPrice: number;
+      quantity: number;
+      lineTotal: number;
+      sellerId: string;
+    }[] = [];
+    let total = 0;
+    for (const item of data.items) {
+      const product = byId.get(item.productId);
+      if (!product) {
+        return fail("One of the items is no longer available.", 409);
+      }
+      if (item.quantity > product.stockQty) {
+        return fail(
+          `Only ${product.stockQty} ${product.unit} of ${product.name} left.`,
+          409,
+        );
+      }
+      const lineTotal = product.pricePerUnit * item.quantity;
+      total += lineTotal;
+      lines.push({
+        productId: product.id,
+        productName: product.name,
+        unit: product.unit,
+        unitPrice: product.pricePerUnit,
+        quantity: item.quantity,
+        lineTotal,
+        sellerId: product.sellerId,
+      });
+    }
+
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
@@ -125,7 +120,7 @@ export async function POST(req: NextRequest) {
       return created;
     });
 
-    return NextResponse.json({
+    return ok({
       order: {
         id: order.id,
         orderNumber: order.orderNumber,
@@ -133,9 +128,6 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json(
-      { error: "Could not place order. Please try again." },
-      { status: 500 },
-    );
+    return fail("Could not place order. Please try again.", 500);
   }
 }

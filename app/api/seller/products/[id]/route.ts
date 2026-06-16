@@ -3,16 +3,21 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { UNITS } from "@/lib/types";
+import { ok, fail, readJson } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=60";
 
-function ensureSeller(session: Awaited<ReturnType<typeof getSession>>) {
+function ensureSeller(
+  session: Awaited<ReturnType<typeof getSession>>,
+): NextResponse | null {
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
   if (session.role === "BUYER") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return fail("Forbidden", 403);
   }
   return null;
 }
@@ -39,58 +44,57 @@ export async function PUT(
   const denied = ensureSeller(session);
   if (denied) return denied;
 
-  const existing = await prisma.product.findUnique({
-    where: { id: params.id },
-  });
-  if (!existing) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
-  if (existing.sellerId !== session!.userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
-      { status: 400 },
-    );
+    return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
   }
 
   const data = parsed.data;
 
-  const category = await prisma.category.findUnique({
-    where: { id: data.categoryId },
-  });
-  if (!category) {
-    return NextResponse.json({ error: "Category not found" }, { status: 400 });
+  try {
+    const existing = await prisma.product.findUnique({
+      where: { id: params.id },
+    });
+    if (!existing) {
+      return fail("Product not found", 404);
+    }
+    if (existing.sellerId !== session!.userId) {
+      return fail("Forbidden", 403);
+    }
+
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+    });
+    if (!category) {
+      return fail("Category not found", 400);
+    }
+
+    const product = await prisma.product.update({
+      where: { id: params.id },
+      data: {
+        name: data.name,
+        description: data.description,
+        image: data.image && data.image !== "" ? data.image : DEFAULT_IMAGE,
+        categoryId: data.categoryId,
+        unit: data.unit,
+        pricePerUnit: data.pricePerUnit,
+        minOrderQty: data.minOrderQty,
+        stockQty: data.stockQty,
+        origin: data.origin && data.origin !== "" ? data.origin : null,
+        isActive: data.isActive ?? true,
+      },
+      include: { category: true },
+    });
+
+    return ok({ product });
+  } catch {
+    return fail("Could not update product. Please try again.", 500);
   }
-
-  const product = await prisma.product.update({
-    where: { id: params.id },
-    data: {
-      name: data.name,
-      description: data.description,
-      image: data.image && data.image !== "" ? data.image : DEFAULT_IMAGE,
-      categoryId: data.categoryId,
-      unit: data.unit,
-      pricePerUnit: data.pricePerUnit,
-      minOrderQty: data.minOrderQty,
-      stockQty: data.stockQty,
-      origin: data.origin && data.origin !== "" ? data.origin : null,
-      isActive: data.isActive ?? true,
-    },
-    include: { category: true },
-  });
-
-  return NextResponse.json({ product });
 }
 
 // DELETE — delete the seller's own product (soft-deactivate if it has order items)
@@ -102,28 +106,32 @@ export async function DELETE(
   const denied = ensureSeller(session);
   if (denied) return denied;
 
-  const existing = await prisma.product.findUnique({
-    where: { id: params.id },
-    include: { _count: { select: { orderItems: true } } },
-  });
-  if (!existing) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
-  if (existing.sellerId !== session!.userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  if (existing._count.orderItems > 0) {
-    await prisma.product.update({
+  try {
+    const existing = await prisma.product.findUnique({
       where: { id: params.id },
-      data: { isActive: false },
+      include: { _count: { select: { orderItems: true } } },
     });
-    return NextResponse.json({ ok: true, softDeleted: true });
+    if (!existing) {
+      return fail("Product not found", 404);
+    }
+    if (existing.sellerId !== session!.userId) {
+      return fail("Forbidden", 403);
+    }
+
+    if (existing._count.orderItems > 0) {
+      await prisma.product.update({
+        where: { id: params.id },
+        data: { isActive: false },
+      });
+      return ok({ ok: true, softDeleted: true });
+    }
+
+    // Remove any cart references first to avoid FK issues, then hard delete.
+    await prisma.cartItem.deleteMany({ where: { productId: params.id } });
+    await prisma.product.delete({ where: { id: params.id } });
+
+    return ok({ ok: true, softDeleted: false });
+  } catch {
+    return fail("Could not delete product. Please try again.", 500);
   }
-
-  // Remove any cart references first to avoid FK issues, then hard delete.
-  await prisma.cartItem.deleteMany({ where: { productId: params.id } });
-  await prisma.product.delete({ where: { id: params.id } });
-
-  return NextResponse.json({ ok: true, softDeleted: false });
 }

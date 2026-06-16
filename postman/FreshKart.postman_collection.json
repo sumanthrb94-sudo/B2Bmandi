@@ -1,0 +1,719 @@
+{
+  "info": {
+    "name": "FreshKart B2B API",
+    "_postman_id": "f7e1a3c2-4b5d-4e6f-9a1b-0c2d3e4f5a6b",
+    "description": "End-to-end API test suite for the FreshKart (B2B Mandi) Next.js app. Uses a single shared cookie jar across the run, so requests are ordered so the correct user (none -> customer -> admin) is logged in for each section.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level assertion applied to every request: fast responses.",
+          "pm.test('Response time is below 5000ms', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "slug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderQty",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('body.status === \"ok\"', function () {",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "});",
+                  "pm.test('db is up', function () {",
+                  "  pm.expect(json.db).to.eql('up');",
+                  "});",
+                  "pm.test('timestamp present', function () {",
+                  "  pm.expect(json).to.have.property('timestamp');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "GET /api/products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('products is a non-empty array', function () {",
+                  "  pm.expect(json.products).to.be.an('array');",
+                  "  pm.expect(json.products.length).to.be.above(0);",
+                  "});",
+                  "var p0 = json.products[0];",
+                  "pm.test('first product has expected shape', function () {",
+                  "  pm.expect(p0).to.have.property('id');",
+                  "  pm.expect(p0).to.have.property('slug');",
+                  "  pm.expect(p0).to.have.property('name');",
+                  "  pm.expect(p0).to.have.property('pricePerUnit');",
+                  "  pm.expect(p0).to.have.property('minOrderQty');",
+                  "  pm.expect(p0).to.have.property('unit');",
+                  "  pm.expect(p0).to.have.property('stockQty');",
+                  "});",
+                  "pm.collectionVariables.set('productId', p0.id);",
+                  "pm.collectionVariables.set('slug', p0.slug);",
+                  "",
+                  "// Pick a product whose minOrderQty <= 20 and with enough stock to order.",
+                  "var orderable = json.products.find(function (p) {",
+                  "  return p.minOrderQty <= 20 && p.stockQty >= p.minOrderQty;",
+                  "});",
+                  "pm.test('an orderable product (minOrderQty <= 20) exists', function () {",
+                  "  pm.expect(orderable, 'no product with minOrderQty <= 20 found').to.not.be.undefined;",
+                  "});",
+                  "if (orderable) {",
+                  "  pm.collectionVariables.set('orderProductId', orderable.id);",
+                  "  pm.collectionVariables.set('orderQty', orderable.minOrderQty);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/products/{{slug}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('product returned with matching slug', function () {",
+                  "  pm.expect(json).to.have.property('product');",
+                  "  pm.expect(json.product.slug).to.eql(pm.collectionVariables.get('slug'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{slug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{slug}}"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/products/zzz-nope (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('unknown slug returns 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/zzz-nope",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "zzz-nope"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('categories is an array with length >= 1', function () {",
+                  "  pm.expect(json.categories).to.be.an('array');",
+                  "  pm.expect(json.categories.length).to.be.at.least(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/login (bad creds 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('bad credentials return 401', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"buyer@kirana.com\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/login (customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('user returned with role BUYER', function () {",
+                  "  pm.expect(json).to.have.property('user');",
+                  "  pm.expect(json.user.role).to.eql('BUYER');",
+                  "});",
+                  "pm.test('no password field anywhere in body', function () {",
+                  "  pm.expect(pm.response.text()).to.not.include('\"password\"');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"buyer@kirana.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me (customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('returns current user', function () {",
+                  "  pm.expect(json).to.have.property('user');",
+                  "  pm.expect(json.user.email).to.eql('buyer@kirana.com');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer order flow",
+      "item": [
+        {
+          "name": "POST /api/order (empty items 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('empty items returns 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [],\n  \"deliveryName\": \"Suresh Kumar\",\n  \"deliveryPhone\": \"9812345678\",\n  \"deliveryAddress\": \"12, Gandhi Bazaar, Basavanagudi\",\n  \"deliveryCity\": \"Bengaluru\",\n  \"deliveryPincode\": \"560004\",\n  \"paymentMethod\": \"COD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "order"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/order (valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('order returned with id and orderNumber', function () {",
+                  "  pm.expect(json).to.have.property('order');",
+                  "  pm.expect(json.order).to.have.property('id');",
+                  "  pm.expect(json.order.orderNumber, 'orderNumber missing').to.not.be.undefined;",
+                  "  pm.expect(json.order).to.have.property('totalAmount');",
+                  "});",
+                  "pm.collectionVariables.set('orderId', json.order.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"productId\": \"{{orderProductId}}\", \"quantity\": {{orderQty}} }\n  ],\n  \"deliveryName\": \"Suresh Kumar\",\n  \"deliveryPhone\": \"9812345678\",\n  \"deliveryAddress\": \"12, Gandhi Bazaar, Basavanagudi\",\n  \"deliveryCity\": \"Bengaluru\",\n  \"deliveryPincode\": \"560004\",\n  \"paymentMethod\": \"COD\",\n  \"notes\": \"Postman e2e test order\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "order"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('orders is an array', function () {",
+                  "  pm.expect(json.orders).to.be.an('array');",
+                  "});",
+                  "pm.test('the placed order is present', function () {",
+                  "  var id = pm.collectionVariables.get('orderId');",
+                  "  var found = json.orders.some(function (o) { return o.id === id; });",
+                  "  pm.expect(found, 'placed order not found in list').to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/orders/{{orderId}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('order returned with matching id', function () {",
+                  "  pm.expect(json).to.have.property('order');",
+                  "  pm.expect(json.order.id).to.eql(pm.collectionVariables.get('orderId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorization",
+      "item": [
+        {
+          "name": "PATCH /api/admin/products/{{productId}} as customer (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('customer cannot patch admin product (403)', function () {",
+                  "  pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricePerUnit\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "products", "{{productId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin flow",
+      "item": [
+        {
+          "name": "POST /api/auth/login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('user returned with role ADMIN', function () {",
+                  "  pm.expect(json).to.have.property('user');",
+                  "  pm.expect(json.user.role).to.eql('ADMIN');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@b2bmandi.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/admin/orders/{{orderId}} (CONFIRMED)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('order status is CONFIRMED', function () {",
+                  "  pm.expect(json).to.have.property('order');",
+                  "  pm.expect(json.order.status).to.eql('CONFIRMED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "orders", "{{orderId}}"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/admin/products/{{productId}} (pricePerUnit 99)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('product pricePerUnit is 99', function () {",
+                  "  pm.expect(json).to.have.property('product');",
+                  "  pm.expect(json.product.pricePerUnit).to.eql(99);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricePerUnit\": 99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "products", "{{productId}}"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/admin/orders/{{orderId}} (invalid status 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('invalid status returns 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"NOPE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "orders", "{{orderId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "POST /api/auth/logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('logout returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me (logged out 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('me returns 401 after logout', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

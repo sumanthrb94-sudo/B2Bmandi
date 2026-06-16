@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { seedDatabase } from "@/prisma/seed-core";
+import { fail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,22 +18,19 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const secret = process.env.SEED_SECRET;
   if (!secret) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return fail("Not found", 404);
   }
   const provided =
     req.nextUrl.searchParams.get("secret") ??
     req.headers.get("x-seed-secret");
   if (provided !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return fail("Unauthorized", 401);
   }
 
   try {
     const summary = await seedDatabase(prisma);
     return NextResponse.json({ ok: true, ...summary });
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Seed failed" },
-      { status: 500 },
-    );
+  } catch {
+    return fail("Seed failed", 500);
   }
 }

@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { ok, fail } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return fail("Unauthenticated", 401);
+    }
+    const { password: _omit, ...safe } = user;
+    return ok({ user: safe });
+  } catch {
+    return fail("Something went wrong. Please try again.", 500);
   }
-  const { password: _omit, ...safe } = user;
-  return NextResponse.json({ user: safe });
 }

@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
+import { ok, fail, readJson } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 const orderItemInclude = {
   items: { include: { product: { select: { id: true, slug: true, image: true } } } },
@@ -12,16 +14,20 @@ const orderItemInclude = {
 export async function GET() {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
 
-  const orders = await prisma.order.findMany({
-    where: { buyerId: session.userId },
-    include: orderItemInclude,
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    const orders = await prisma.order.findMany({
+      where: { buyerId: session.userId },
+      include: orderItemInclude,
+      orderBy: { createdAt: "desc" },
+    });
 
-  return NextResponse.json({ orders });
+    return ok({ orders });
+  } catch {
+    return fail("Could not load orders. Please try again.", 500);
+  }
 }
 
 const postSchema = z.object({
@@ -38,22 +44,17 @@ const postSchema = z.object({
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
-      { status: 400 },
-    );
+    return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
   }
   const data = parsed.data;
 
@@ -131,12 +132,12 @@ export async function POST(req: Request) {
       return created;
     });
 
-    return NextResponse.json({ order }, { status: 201 });
+    return ok({ order }, 201);
   } catch (err) {
     if (err instanceof OrderError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
+      return fail(err.message, err.status);
     }
-    throw err;
+    return fail("Could not place order. Please try again.", 500);
   }
 }
 

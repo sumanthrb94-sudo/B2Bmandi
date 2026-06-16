@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { ok, fail, readJson } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 const patchSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -17,38 +19,37 @@ const patchSchema = z.object({
 export async function PATCH(req: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
-      { status: 400 },
-    );
+    return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
   }
 
   const d = parsed.data;
-  const user = await prisma.user.update({
-    where: { id: session.userId },
-    data: {
-      name: d.name,
-      businessName: d.businessName || null,
-      phone: d.phone || null,
-      city: d.city || null,
-      address: d.address || null,
-      pincode: d.pincode || null,
-      gstin: d.gstin || null,
-    },
-  });
+  try {
+    const user = await prisma.user.update({
+      where: { id: session.userId },
+      data: {
+        name: d.name,
+        businessName: d.businessName || null,
+        phone: d.phone || null,
+        city: d.city || null,
+        address: d.address || null,
+        pincode: d.pincode || null,
+        gstin: d.gstin || null,
+      },
+    });
 
-  const { password: _omit, ...safe } = user;
-  return NextResponse.json({ user: safe });
+    const { password: _omit, ...safe } = user;
+    return ok({ user: safe });
+  } catch {
+    return fail("Could not update profile. Please try again.", 500);
+  }
 }

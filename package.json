@@ -10,7 +10,9 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts"
+    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
+    "test:api": "newman run postman/FreshKart.postman_collection.json -e postman/FreshKart.postman_environment.json",
+    "test:api:ci": "newman run postman/FreshKart.postman_collection.json --env-var baseUrl=$BASE_URL --reporters cli"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -33,6 +35,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
+    "newman": "^6.1.3",
     "postcss": "^8.4.49",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.15",

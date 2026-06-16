@@ -1,91 +1,70 @@
-import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { ok, fail, readJson } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
+const patchSchema = z
+  .object({
+    pricePerUnit: z.number().min(0, "pricePerUnit must be a number >= 0"),
+    stockQty: z
+      .number()
+      .int("stockQty must be an integer >= 0")
+      .min(0, "stockQty must be an integer >= 0"),
+    isActive: z.boolean(),
+  })
+  .partial()
+  .refine((d) => Object.keys(d).length > 0, {
+    message: "No valid fields to update",
+  });
+
 export async function PATCH(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } },
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    return fail("Unauthenticated", 401);
   }
   if (session.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return fail("Forbidden", 403);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
-  const { pricePerUnit, stockQty, isActive } = body as {
-    pricePerUnit?: unknown;
-    stockQty?: unknown;
-    isActive?: unknown;
-  };
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
+  }
 
   const data: {
     pricePerUnit?: number;
     stockQty?: number;
     isActive?: boolean;
   } = {};
-
-  if (pricePerUnit !== undefined) {
-    if (typeof pricePerUnit !== "number" || pricePerUnit < 0) {
-      return NextResponse.json(
-        { error: "pricePerUnit must be a number >= 0" },
-        { status: 400 },
-      );
-    }
-    data.pricePerUnit = pricePerUnit;
-  }
-
-  if (stockQty !== undefined) {
-    if (
-      typeof stockQty !== "number" ||
-      stockQty < 0 ||
-      !Number.isInteger(stockQty)
-    ) {
-      return NextResponse.json(
-        { error: "stockQty must be an integer >= 0" },
-        { status: 400 },
-      );
-    }
-    data.stockQty = stockQty;
-  }
-
-  if (isActive !== undefined) {
-    if (typeof isActive !== "boolean") {
-      return NextResponse.json(
-        { error: "isActive must be a boolean" },
-        { status: 400 },
-      );
-    }
-    data.isActive = isActive;
-  }
-
-  if (Object.keys(data).length === 0) {
-    return NextResponse.json(
-      { error: "No valid fields to update" },
-      { status: 400 },
-    );
-  }
+  if (parsed.data.pricePerUnit !== undefined)
+    data.pricePerUnit = parsed.data.pricePerUnit;
+  if (parsed.data.stockQty !== undefined) data.stockQty = parsed.data.stockQty;
+  if (parsed.data.isActive !== undefined) data.isActive = parsed.data.isActive;
 
   try {
     const product = await prisma.product.update({
       where: { id: params.id },
       data,
     });
-    return NextResponse.json({ product });
-  } catch {
-    return NextResponse.json(
-      { error: "Could not update product." },
-      { status: 500 },
-    );
+    return ok({ product });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return fail("Product not found", 404);
+    }
+    return fail("Could not update product.", 500);
   }
 }

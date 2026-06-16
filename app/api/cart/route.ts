@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { ok, fail, readJson } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 const productInclude = {
   category: true,
@@ -14,21 +16,25 @@ const productInclude = {
 export async function GET() {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
 
-  const items = await prisma.cartItem.findMany({
-    where: { userId: session.userId },
-    include: { product: { include: productInclude } },
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    const items = await prisma.cartItem.findMany({
+      where: { userId: session.userId },
+      include: { product: { include: productInclude } },
+      orderBy: { createdAt: "desc" },
+    });
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.quantity * item.product.pricePerUnit,
-    0,
-  );
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.quantity * item.product.pricePerUnit,
+      0,
+    );
 
-  return NextResponse.json({ items, subtotal });
+    return ok({ items, subtotal });
+  } catch {
+    return fail("Could not load cart. Please try again.", 500);
+  }
 }
 
 const postSchema = z.object({
@@ -40,60 +46,64 @@ const postSchema = z.object({
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return fail("Not authenticated", 401);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
-      { status: 400 },
-    );
+    return fail(parsed.error.errors[0]?.message ?? "Invalid input", 400);
   }
 
   const { productId, quantity } = parsed.data;
 
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product || !product.isActive) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
-  if (product.stockQty <= 0) {
-    return NextResponse.json({ error: "Out of stock" }, { status: 409 });
-  }
-
-  // Clamp the requested quantity to [minOrderQty, stockQty]
-  const clamp = (q: number) =>
-    Math.min(Math.max(q, product.minOrderQty), product.stockQty);
-
-  const existing = await prisma.cartItem.findUnique({
-    where: { userId_productId: { userId: session.userId, productId } },
-  });
-
-  let item;
-  if (existing) {
-    const newQty = Math.min(existing.quantity + clamp(quantity), product.stockQty);
-    item = await prisma.cartItem.update({
-      where: { id: existing.id },
-      data: { quantity: newQty },
-      include: { product: { include: productInclude } },
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
     });
-  } else {
-    item = await prisma.cartItem.create({
-      data: {
-        userId: session.userId,
-        productId,
-        quantity: clamp(quantity),
-      },
-      include: { product: { include: productInclude } },
-    });
-  }
+    if (!product || !product.isActive) {
+      return fail("Product not found", 404);
+    }
+    if (product.stockQty <= 0) {
+      return fail("Out of stock", 409);
+    }
 
-  return NextResponse.json({ item }, { status: existing ? 200 : 201 });
+    // Clamp the requested quantity to [minOrderQty, stockQty]
+    const clamp = (q: number) =>
+      Math.min(Math.max(q, product.minOrderQty), product.stockQty);
+
+    const existing = await prisma.cartItem.findUnique({
+      where: { userId_productId: { userId: session.userId, productId } },
+    });
+
+    let item;
+    if (existing) {
+      const newQty = Math.min(
+        existing.quantity + clamp(quantity),
+        product.stockQty,
+      );
+      item = await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: newQty },
+        include: { product: { include: productInclude } },
+      });
+    } else {
+      item = await prisma.cartItem.create({
+        data: {
+          userId: session.userId,
+          productId,
+          quantity: clamp(quantity),
+        },
+        include: { product: { include: productInclude } },
+      });
+    }
+
+    return ok({ item }, existing ? 200 : 201);
+  } catch {
+    return fail("Could not update cart. Please try again.", 500);
+  }
 }

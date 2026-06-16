@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { ok, fail } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -48,16 +50,20 @@ export async function GET(req: Request) {
       break;
   }
 
-  const products = await prisma.product.findMany({
-    where,
-    orderBy,
-    include: {
-      category: true,
-      seller: {
-        select: { id: true, name: true, businessName: true, city: true },
+  try {
+    const products = await prisma.product.findMany({
+      where,
+      orderBy,
+      include: {
+        category: true,
+        seller: {
+          select: { id: true, name: true, businessName: true, city: true },
+        },
       },
-    },
-  });
+    });
 
-  return NextResponse.json({ products });
+    return ok({ products });
+  } catch {
+    return fail("Could not load products. Please try again.", 500);
+  }
 }

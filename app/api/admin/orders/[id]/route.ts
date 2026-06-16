@@ -1,55 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { ok, fail, readJson } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-const VALID_STATUSES = [
-  "PENDING",
-  "CONFIRMED",
-  "PACKED",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-] as const;
+const patchSchema = z.object({
+  status: z.enum([
+    "PENDING",
+    "CONFIRMED",
+    "PACKED",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+  ]),
+});
 
 export async function PATCH(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } },
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    return fail("Unauthenticated", 401);
   }
   if (session.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return fail("Forbidden", 403);
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await readJson<unknown>(req);
+  if (body === null) {
+    return fail("Invalid request body", 400);
   }
 
-  const status = (body as { status?: unknown }).status;
-  if (
-    typeof status !== "string" ||
-    !VALID_STATUSES.includes(status as (typeof VALID_STATUSES)[number])
-  ) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return fail("Invalid status", 400);
   }
 
   try {
     const order = await prisma.order.update({
       where: { id: params.id },
-      data: { status: status as (typeof VALID_STATUSES)[number] },
+      data: { status: parsed.data.status },
     });
-    return NextResponse.json({ order });
-  } catch {
-    return NextResponse.json(
-      { error: "Could not update order." },
-      { status: 500 },
-    );
+    return ok({ order });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return fail("Order not found", 404);
+    }
+    return fail("Could not update order.", 500);
   }
 }
