@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Field } from "@/components/ui/Input";
+import { FullScreenLoader } from "@/components/ui/FullScreenLoader";
 
 const DEMO_ACCOUNTS = [
   { label: "Customer", email: "buyer@kirana.com" },
@@ -20,6 +21,8 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [redirecting, setRedirecting] = React.useState(false);
+  const [destLabel, setDestLabel] = React.useState("Loading…");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,16 +37,19 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Unable to log in");
+        setLoading(false);
         return;
       }
       // admins land on the dashboard; everyone else on the shop (or callback)
-      const dest =
-        data.user?.role === "ADMIN" ? "/admin" : callbackUrl || "/";
+      const isAdmin = data.user?.role === "ADMIN";
+      const dest = isAdmin ? "/admin" : callbackUrl || "/";
+      // keep a loading ring on screen until the destination finishes loading
+      setDestLabel(isAdmin ? "Loading dashboard…" : "Loading your shop…");
+      setRedirecting(true);
       router.push(dest);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
@@ -56,6 +62,8 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div className="space-y-6">
+      {redirecting && <FullScreenLoader overlay label={destLabel} />}
+
       <form onSubmit={onSubmit} className="space-y-4">
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
