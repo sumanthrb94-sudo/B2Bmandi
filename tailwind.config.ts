@@ -36,10 +36,29 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // Onboarding type system (self-hosted via next/font)
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        jakarta: ["var(--font-jakarta)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04)",
         "card-hover": "0 8px 24px -6px rgba(0,0,0,0.12)",
+      },
+      keyframes: {
+        floaty: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-12px)" },
+        },
+        pop: {
+          "0%": { transform: "scale(.4)", opacity: "0" },
+          "70%": { transform: "scale(1.08)" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+      },
+      animation: {
+        floaty: "floaty 4.5s ease-in-out infinite",
+        "floaty-slow": "floaty 6.5s ease-in-out infinite 1.2s",
+        pop: "pop .7s cubic-bezier(.2,.8,.2,1) both",
       },
     },
   },

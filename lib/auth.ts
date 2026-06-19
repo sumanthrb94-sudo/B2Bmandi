@@ -68,6 +68,33 @@ export async function destroySession(): Promise<void> {
   cookies().set(COOKIE_NAME, "", { path: "/", maxAge: 0 });
 }
 
+// ---------- short-lived signed tokens (OTP challenge / verified handoff) ----------
+// Generic helpers for stateless, tamper-proof tokens that carry a small payload
+// for a few minutes (e.g. an OTP challenge between "send code" and "verify",
+// or a "this phone is verified" handoff between verify and profile creation).
+// They reuse the auth signing secret but are NOT session cookies.
+export async function signEphemeralToken(
+  payload: Record<string, unknown>,
+  ttlSeconds: number,
+): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${ttlSeconds}s`)
+    .sign(getSecret());
+}
+
+export async function verifyEphemeralToken<T = Record<string, unknown>>(
+  token: string,
+): Promise<T | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    return payload as unknown as T;
+  } catch {
+    return null;
+  }
+}
+
 export async function getSession(): Promise<SessionPayload | null> {
   const token = cookies().get(COOKIE_NAME)?.value;
   if (!token) return null;

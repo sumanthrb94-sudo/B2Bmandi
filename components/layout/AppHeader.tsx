@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Sprout, LayoutDashboard, LogOut, Package, LogIn, User } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 
 export function AppHeader({ session }: { session: SessionPayload | null }) {
   const router = useRouter();
+  const pathname = usePathname();
   const isAdmin = session?.role === "ADMIN";
+
+  // The onboarding flow is a full-screen, pre-auth experience — no app chrome.
+  if (pathname?.startsWith("/onboarding")) return null;
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });

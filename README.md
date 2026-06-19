@@ -9,15 +9,24 @@ Prisma · PostgreSQL**.
 ## 📱 Mobile-first experience
 
 The primary UI is a **mobile app** (phone-frame shell, sticky header, bottom tab
-nav) optimised for a 4-step flow — designed to wrap as an **APK later** (it ships
+nav) optimised for a short flow — designed to wrap as an **APK later** (it ships
 a PWA manifest + maskable icon, so it's installable / Capacitor- & TWA-ready):
 
-1. **Login** — quick auth with one-tap demo logins.
+1. **Onboarding** (`/onboarding`) — a full-screen, fresh-green signup flow:
+   welcome → mobile number → OTP verify → shop details (name, business type,
+   delivery area) → "all set". Phone is the identity (one-tap **OTP login** for
+   returning shops); email/password remains for admin & legacy accounts.
 2. **Browse produce** — Ninjacart-style catalogue: category chips, search, 2-up
    product grid with inline **ADD** + quantity steppers and a sticky cart bar.
 3. **Billing** — items, editable delivery details, payment method, bill summary,
    one-tap **Place order**.
 4. **Order success** — confirmation with order number, ETA, summary & tracking.
+
+> **Phone OTP:** no SMS provider is wired up, so in demo mode the 6-digit code is
+> shown in-app (one-tap autofill). Integrate a sender in
+> `app/api/auth/otp/start` and set `OTP_DEV_MODE=false` to go live. The flow is
+> stateless and serverless-safe — the challenge is a short-lived signed token
+> carrying a keyed hash of the code, never server-side state.
 
 > A fuller desktop marketplace (catalogue/detail pages, seller hub for product &
 > order management) also ships under `/products`, `/seller`, etc.

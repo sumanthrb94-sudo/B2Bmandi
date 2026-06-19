@@ -1,7 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { getSession } from "@/lib/auth";
+
+// Self-hosted (next/font serves from our own origin, so the app's strict CSP
+// needs no external font/style allowances).
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "FreshKart — Wholesale B2B Fruits & Veggies",
@@ -29,7 +43,7 @@ export default async function RootLayout({
   const session = await getSession();
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${jakarta.variable} ${bricolage.variable}`}>
       <body className="bg-gray-100">
         {/* Phone-frame app shell — centers a mobile column on larger screens */}
         <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-gray-50 shadow-xl">
