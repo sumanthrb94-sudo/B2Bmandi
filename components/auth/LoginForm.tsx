@@ -3,14 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Field } from "@/components/ui/Input";
 import { FullScreenLoader } from "@/components/ui/FullScreenLoader";
 
 const DEMO_ACCOUNTS = [
-  { label: "Customer", email: "customer@freshkart.in" },
-  { label: "Admin", email: "admin@freshkart.in" },
+  { label: "Customer", email: "customer@freshkart.in", password: "password123", description: "Kirana buyer — browse & order" },
+  { label: "Admin", email: "admin@freshkart.in", password: "password123", description: "Dashboard, orders & inventory" },
 ] as const;
 
 /**
@@ -36,15 +36,14 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [redirecting, setRedirecting] = React.useState(false);
   const [destLabel, setDestLabel] = React.useState("Loading…");
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function doLogin(loginEmail: string, loginPassword: string) {
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -56,7 +55,6 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       const isAdmin = data.user?.role === "ADMIN";
       const safeCallback = sanitizeCallbackUrl(callbackUrl);
       const dest = isAdmin ? "/admin" : safeCallback;
-      // keep a loading ring on screen until the destination finishes loading
       setDestLabel(isAdmin ? "Loading dashboard…" : "Loading your shop…");
       setRedirecting(true);
       router.push(dest);
@@ -67,14 +65,57 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
     }
   }
 
-  function fill(demoEmail: string) {
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await doLogin(email, password);
+  }
+
+  async function loginAsDemo(demoEmail: string, demoPassword: string) {
     setEmail(demoEmail);
-    setError(null);
+    setPassword(demoPassword);
+    await doLogin(demoEmail, demoPassword);
   }
 
   return (
     <div className="space-y-6">
       {redirecting && <FullScreenLoader overlay label={destLabel} />}
+
+      {/* Demo quick-access — always shown so the demo loop is self-contained */}
+      <div className="rounded-xl border border-brand-200 bg-brand-50 p-4">
+        <div className="mb-3 flex items-center gap-1.5">
+          <Zap className="h-4 w-4 text-brand-600" />
+          <p className="text-xs font-bold uppercase tracking-wide text-brand-700">
+            Demo — one-tap login
+          </p>
+        </div>
+        <div className="space-y-2">
+          {DEMO_ACCOUNTS.map((acc) => (
+            <button
+              key={acc.email}
+              type="button"
+              disabled={loading}
+              onClick={() => loginAsDemo(acc.email, acc.password)}
+              className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-3 py-2.5 text-left shadow-sm transition-colors hover:border-brand-400 active:scale-[0.99] disabled:opacity-50"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-gray-900">
+                  {acc.label}
+                </span>
+                <span className="text-xs text-gray-500">{acc.description}</span>
+              </span>
+              <span className="ml-3 shrink-0 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-bold text-white">
+                Login →
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative flex items-center">
+        <div className="flex-1 border-t border-gray-200" />
+        <span className="mx-3 text-xs text-gray-400">or enter manually</span>
+        <div className="flex-1 border-t border-gray-200" />
+      </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         {error && (
@@ -112,38 +153,6 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           {loading ? "Logging in…" : "Log in"}
         </Button>
       </form>
-
-      {process.env.NODE_ENV !== "production" && (
-        <div className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            Demo accounts (dev)
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Tap to fill the email, then enter the password you were given.
-          </p>
-          <div className="mt-3 space-y-2">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <div
-                key={acc.email}
-                className="flex items-center justify-between gap-2 rounded-md bg-white px-3 py-2 text-sm shadow-sm"
-              >
-                <span className="min-w-0">
-                  <span className="font-medium text-gray-900">{acc.label}</span>{" "}
-                  <span className="truncate text-gray-500">{acc.email}</span>
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fill(acc.email)}
-                >
-                  Fill
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <p className="text-center text-sm text-gray-600">
         New to FreshKart?{" "}

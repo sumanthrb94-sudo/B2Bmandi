@@ -13,6 +13,7 @@ import {
   X,
   CheckCircle2,
   ShieldCheck,
+  Package,
 } from "lucide-react";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { MockPaymentSheet } from "@/components/order/MockPaymentSheet";
@@ -586,12 +587,20 @@ export function UnifiedOrderScreen({
                 ? "Business credit"
                 : "Cash on delivery"}
           </span>
-          <button
-            onClick={reset}
-            className="mt-7 w-full max-w-xs rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
-          >
-            Place another order
-          </button>
+          <div className="mt-7 flex w-full max-w-xs flex-col gap-3">
+            <button
+              onClick={reset}
+              className="w-full rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
+            >
+              Place another order
+            </button>
+            <button
+              onClick={() => router.push("/orders")}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 active:scale-[0.99]"
+            >
+              <Package className="h-4 w-4" /> View my orders
+            </button>
+          </div>
         </div>
       )}
     </div>

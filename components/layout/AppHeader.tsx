@@ -11,8 +11,9 @@ export function AppHeader({ session }: { session: SessionPayload | null }) {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    // Full page reload: clears Next.js router cache and prevents the back-button
+    // from returning to a protected page after logout.
+    window.location.replace("/login");
   }
 
   return (

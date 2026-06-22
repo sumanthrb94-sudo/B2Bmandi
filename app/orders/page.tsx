@@ -34,7 +34,15 @@ export default async function OrdersPage() {
 
   return (
     <div className="px-4 py-4">
-      <h1 className="mb-3 text-lg font-bold text-gray-900">Your orders</h1>
+      <div className="mb-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-gray-900">Your orders</h1>
+        <Link
+          href="/"
+          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600"
+        >
+          ← Back to shop
+        </Link>
+      </div>
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-20 text-center">

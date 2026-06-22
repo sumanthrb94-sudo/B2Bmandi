@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { getSession } from "@/lib/auth";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
   title: "Log in — FreshKart",
 };
 
-export default function LoginPage({
+export const dynamic = "force-dynamic";
+
+export default async function LoginPage({
   searchParams,
 }: {
   searchParams: { callbackUrl?: string; registered?: string };
 }) {
+  // Already logged-in users skip the login page entirely.
+  const session = await getSession();
+  if (session) redirect(session.role === "ADMIN" ? "/admin" : "/");
+
   const callbackUrl = searchParams.callbackUrl;
   const registered = searchParams.registered === "1";
 
