@@ -98,6 +98,7 @@ export function OnboardingFlow() {
     const payload = {
       name: shopName.trim() || "Shop Owner",
       businessName: shopName.trim() || undefined,
+      businessType: bizType,
       email,
       phone: `+91 ${phoneDigits}`,
       city: "Bengaluru",

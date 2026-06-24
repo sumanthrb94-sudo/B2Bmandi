@@ -111,10 +111,10 @@ export async function seedDatabase(prisma: PrismaClient) {
   }
 
   await prisma.user.create({
-    data: { email: "customer@freshkart.in", password, name: "FreshKart Customer", role: "BUYER", businessName: "Suresh Kirana Store", city: "Bengaluru", phone: "9812345678", address: "12, Gandhi Bazaar, Basavanagudi", pincode: "560004", gstin: "29BUYER1234A1Z9" },
+    data: { email: "customer@freshkart.in", password, name: "FreshKart Customer", role: "BUYER", businessName: "Suresh Kirana Store", businessType: "Kirana store", city: "Bengaluru", phone: "9812345678", address: "12, Gandhi Bazaar, Basavanagudi", pincode: "560004", gstin: "29BUYER1234A1Z9" },
   });
   await prisma.user.create({
-    data: { email: "chef@hotelblue.com", password, name: "Anita Desai", role: "BUYER", businessName: "Hotel Blue Orchid", city: "Pune", phone: "9823456789", address: "5, FC Road", pincode: "411004" },
+    data: { email: "chef@hotelblue.com", password, name: "Anita Desai", role: "BUYER", businessName: "Hotel Blue Orchid", businessType: "Hotel", city: "Pune", phone: "9823456789", address: "5, FC Road", pincode: "411004" },
   });
 
   let productCount = 0;
