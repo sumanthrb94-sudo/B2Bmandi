@@ -44,7 +44,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-gray-100">
         {/* Phone-frame app shell — centers a mobile column on larger screens */}
-        <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-gray-50 shadow-xl">
+        <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-fresh-surface shadow-xl">
           <AppHeader session={session} />
           <main className="flex-1">{children}</main>
         </div>

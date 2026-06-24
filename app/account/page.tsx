@@ -10,7 +10,7 @@ import type { SafeUser } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Your Account — FreshKart",
+  title: "Your Account — FreshCart",
 };
 
 export default async function AccountPage() {
@@ -20,16 +20,16 @@ export default async function AccountPage() {
   const { password: _omit, ...safeUser } = user;
 
   return (
-    <div className="px-5 py-6">
+    <div className="min-h-screen bg-fresh-surface px-5 py-6">
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Your account</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-fresh-ink">
+          Your account
+        </h1>
         <Badge className="bg-brand-100 text-brand-800">{user.role}</Badge>
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">
-          Profile details
-        </h2>
+      <div className="rounded-3xl border border-fresh-border bg-white p-4 shadow-card">
+        <h2 className="mb-4 text-sm font-bold text-fresh-ink">Profile details</h2>
         <AccountForm user={safeUser as SafeUser} />
       </div>
 

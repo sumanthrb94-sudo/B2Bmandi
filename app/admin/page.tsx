@@ -116,7 +116,7 @@ export default async function AdminOverviewPage() {
       {/* Orders by status */}
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="font-display text-base font-extrabold tracking-tight text-fresh-ink">
             Orders by status
           </h2>
         </CardHeader>
@@ -135,40 +135,40 @@ export default async function AdminOverviewPage() {
       {/* Recent orders */}
       <Card>
         <CardHeader className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="font-display text-base font-extrabold tracking-tight text-fresh-ink">
             Recent orders
           </h2>
           <Link
             href="/admin/orders"
-            className="text-sm font-medium text-brand-600 hover:text-brand-700"
+            className="text-sm font-semibold text-brand-600 hover:text-brand-700"
           >
             View all
           </Link>
         </CardHeader>
         <CardBody className="p-0">
           {recentOrders.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-gray-500">
+            <p className="px-5 py-8 text-center text-sm text-fresh-muted">
               No orders yet.
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-fresh-border">
               {recentOrders.map((order) => (
                 <li key={order.id}>
                   <Link
                     href="/admin/orders"
-                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50"
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-fresh-field"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-900">
+                      <p className="truncate text-sm font-medium text-fresh-ink">
                         {order.orderNumber}
                       </p>
-                      <p className="truncate text-xs text-gray-500">
+                      <p className="truncate text-xs text-fresh-muted">
                         {order.buyer.businessName ?? order.buyer.name} ·{" "}
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-fresh-ink">
                         {formatCurrency(order.totalAmount)}
                       </span>
                       <OrderStatusBadge status={order.status} />

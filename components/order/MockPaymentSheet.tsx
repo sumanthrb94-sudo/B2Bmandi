@@ -64,17 +64,17 @@ export function MockPaymentSheet({
   return (
     <div className="fixed inset-0 z-[60] mx-auto flex max-w-[480px] flex-col bg-black/50">
       <button className="flex-1" onClick={onCancel} aria-label="Close" disabled={processing} />
-      <div className="rounded-t-2xl bg-white">
+      <div className="rounded-t-3xl bg-white">
         {/* header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-fresh-border px-4 py-3.5">
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4 text-brand-600" />
-            <span className="text-base font-bold text-gray-900">Pay securely</span>
+            <span className="font-display text-lg font-extrabold tracking-tight text-fresh-ink">Pay securely</span>
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
               TEST MODE
             </span>
           </div>
-          <button onClick={onCancel} disabled={processing} className="text-gray-400 disabled:opacity-40">
+          <button onClick={onCancel} disabled={processing} className="text-fresh-faint disabled:opacity-40">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -82,10 +82,10 @@ export function MockPaymentSheet({
         {processing ? (
           <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
             <Loader2 className="h-10 w-10 animate-spin text-brand-500" />
-            <p className="mt-4 text-sm font-semibold text-gray-900">
+            <p className="mt-4 text-sm font-semibold text-fresh-ink">
               Processing {formatCurrency(amount)}…
             </p>
-            <p className="mt-1 text-xs text-gray-400">Do not close this screen.</p>
+            <p className="mt-1 text-xs text-fresh-faint">Do not close this screen.</p>
           </div>
         ) : (
           <div className="p-4">
@@ -154,11 +154,11 @@ export function MockPaymentSheet({
 
             <button
               onClick={pay}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-btn bg-brand-600 py-4 text-[15px] font-bold text-white shadow-cta active:scale-[0.99]"
             >
               <Lock className="h-4 w-4" /> Pay {formatCurrency(amount)}
             </button>
-            <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-gray-400">
+            <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-fresh-faint">
               <CheckCircle2 className="h-3 w-3 text-brand-500" /> Simulated gateway · PCI-safe demo
             </p>
           </div>
@@ -183,8 +183,8 @@ function TabBtn({
     <button
       onClick={onClick}
       className={
-        "flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold " +
-        (active ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-600")
+        "flex items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold " +
+        (active ? "border-brand-500 bg-brand-50 text-brand-700" : "border-fresh-border text-fresh-muted")
       }
     >
       {icon} {label}

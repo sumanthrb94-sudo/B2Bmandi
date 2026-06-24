@@ -9,22 +9,22 @@ const variants: Record<Variant, string> = {
   primary:
     "bg-brand-500 text-white hover:bg-brand-600 focus-visible:ring-brand-300 shadow-sm",
   secondary:
-    "bg-accent-500 text-white hover:bg-accent-600 focus-visible:ring-accent-300 shadow-sm",
+    "bg-accent-500 text-fresh-ink2 hover:bg-accent-600 focus-visible:ring-accent-300 shadow-sm",
   outline:
-    "border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus-visible:ring-gray-200",
-  ghost: "text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-200",
+    "border border-fresh-border bg-white text-fresh-ink hover:bg-fresh-field focus-visible:ring-brand-100",
+  ghost: "text-fresh-muted hover:bg-fresh-field focus-visible:ring-brand-100",
   danger:
     "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-300 shadow-sm",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
+  sm: "h-9 px-3.5 text-sm",
+  md: "h-11 px-5 text-sm",
   lg: "h-12 px-6 text-base",
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition-colors focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-50";
 
 interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {

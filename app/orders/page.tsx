@@ -11,7 +11,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Your orders — FreshKart",
+  title: "Your orders — FreshCart",
 };
 
 export default async function OrdersPage() {
@@ -33,12 +33,14 @@ export default async function OrdersPage() {
   });
 
   return (
-    <div className="px-4 py-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-900">Your orders</h1>
+    <div className="min-h-screen bg-fresh-surface px-4 py-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-fresh-ink">
+          Your orders
+        </h1>
         <Link
           href="/"
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600"
+          className="rounded-full border border-fresh-border bg-white px-3.5 py-2 text-xs font-semibold text-fresh-muted active:scale-95"
         >
           ← Back to shop
         </Link>
@@ -46,18 +48,18 @@ export default async function OrdersPage() {
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 text-brand-500">
-            <Package className="h-7 w-7" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-50 text-brand-500">
+            <Package className="h-8 w-8" />
           </div>
-          <h2 className="mt-4 text-base font-bold text-gray-900">
+          <h2 className="mt-5 font-display text-xl font-extrabold tracking-tight text-fresh-ink">
             No orders yet
           </h2>
-          <p className="mt-1 max-w-xs text-sm text-gray-500">
+          <p className="mt-1 max-w-xs text-sm text-fresh-muted">
             When you place an order, you can track it right here.
           </p>
           <Link
             href="/"
-            className="mt-5 rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white"
+            className="mt-6 rounded-btn bg-brand-600 px-6 py-3.5 text-sm font-bold text-white shadow-cta active:scale-[0.99]"
           >
             Browse produce
           </Link>
@@ -71,45 +73,45 @@ export default async function OrdersPage() {
               <Link
                 key={order.id}
                 href={`/orders/${order.id}`}
-                className="block rounded-2xl border border-gray-100 bg-white p-3 shadow-sm active:scale-[0.99]"
+                className="block rounded-3xl border border-fresh-border bg-white p-4 shadow-card active:scale-[0.99]"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-bold text-fresh-ink">
                     {order.orderNumber}
                   </span>
                   <OrderStatusBadge status={order.status} />
                 </div>
 
-                <div className="mt-2.5 flex items-center gap-2">
+                <div className="mt-3 flex items-center gap-2">
                   {thumbs.map((it) => (
                     <div
                       key={it.id}
-                      className="relative h-10 w-10 overflow-hidden rounded-lg bg-gray-100"
+                      className="relative h-11 w-11 overflow-hidden rounded-xl bg-fresh-field"
                     >
                       <SafeImage
                         src={it.product.image}
                         alt=""
                         fill
-                        sizes="40px"
+                        sizes="44px"
                         className="object-cover"
                       />
                     </div>
                   ))}
                   {order.items.length > 4 && (
-                    <span className="text-xs font-medium text-gray-400">
+                    <span className="text-xs font-medium text-fresh-faint">
                       +{order.items.length - 4}
                     </span>
                   )}
                 </div>
 
-                <div className="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2.5">
-                  <span className="text-xs text-gray-500">
+                <div className="mt-3 flex items-center justify-between border-t border-fresh-border pt-3">
+                  <span className="text-xs text-fresh-muted">
                     {formatDate(order.createdAt)} · {itemCount}{" "}
                     {itemCount === 1 ? "item" : "items"}
                   </span>
-                  <span className="flex items-center gap-1 text-sm font-bold text-gray-900">
+                  <span className="flex items-center gap-1 text-sm font-bold text-fresh-ink">
                     {formatCurrency(order.totalAmount)}
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                    <ChevronRight className="h-4 w-4 text-fresh-faint" />
                   </span>
                 </div>
               </Link>

@@ -25,8 +25,8 @@ export default async function AdminOrdersPage() {
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <ClipboardList className="h-10 w-10 text-gray-300" />
-        <p className="mt-3 text-sm text-gray-500">No orders yet.</p>
+        <ClipboardList className="h-10 w-10 text-fresh-faint" />
+        <p className="mt-3 text-sm text-fresh-muted">No orders yet.</p>
       </div>
     );
   }
@@ -40,17 +40,17 @@ export default async function AdminOrdersPage() {
             <CardBody className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-900">
+                  <p className="truncate text-sm font-semibold text-fresh-ink">
                     {order.orderNumber}
                   </p>
-                  <p className="truncate text-xs text-gray-500">
+                  <p className="truncate text-xs text-fresh-muted">
                     {order.buyer.businessName ?? order.buyer.name}
                   </p>
                 </div>
                 <OrderStatusBadge status={order.status} />
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fresh-muted">
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
                   {order.deliveryCity}
@@ -62,8 +62,8 @@ export default async function AdminOrdersPage() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                <span className="text-sm font-semibold text-gray-900">
+              <div className="flex items-center justify-between border-t border-fresh-border pt-3">
+                <span className="text-sm font-semibold text-fresh-ink">
                   {formatCurrency(order.totalAmount)}
                 </span>
                 <OrderStatusControl

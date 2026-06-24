@@ -74,9 +74,9 @@ export function ProductAdminRow({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-card">
+    <div className="rounded-3xl border border-fresh-border bg-white p-3 shadow-card">
       <div className="flex gap-3">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-fresh-field">
           <SafeImage
             src={image}
             alt={name}
@@ -86,9 +86,9 @@ export function ProductAdminRow({
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-gray-900">{name}</p>
-          <p className="text-xs text-gray-500">{category}</p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="truncate text-sm font-semibold text-fresh-ink">{name}</p>
+          <p className="text-xs text-fresh-muted">{category}</p>
+          <p className="mt-0.5 text-xs text-fresh-faint">
             {formatCurrency(pricePerUnit)}/kg · MOQ {minOrderQty} kg
           </p>
         </div>
@@ -105,7 +105,7 @@ export function ProductAdminRow({
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-gray-600">
+          <span className="mb-1 block text-xs font-medium text-fresh-muted">
             Price /kg (₹)
           </span>
           <input
@@ -118,7 +118,7 @@ export function ProductAdminRow({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-gray-600">
+          <span className="mb-1 block text-xs font-medium text-fresh-muted">
             Stock (kg)
           </span>
           <input
@@ -132,7 +132,7 @@ export function ProductAdminRow({
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+        <label className="inline-flex items-center gap-2 text-sm text-fresh-muted">
           <input
             type="checkbox"
             checked={active}

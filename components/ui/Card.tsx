@@ -8,7 +8,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-xl border border-gray-200 bg-white shadow-card",
+        "rounded-3xl border border-fresh-border bg-white shadow-card",
         className,
       )}
       {...props}
@@ -29,7 +29,7 @@ export function CardHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-b border-gray-100 px-5 py-4", className)}
+      className={cn("border-b border-fresh-border px-5 py-4", className)}
       {...props}
     />
   );

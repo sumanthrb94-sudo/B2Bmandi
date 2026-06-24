@@ -19,8 +19,8 @@ export default async function AdminProductsPage() {
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Package className="h-10 w-10 text-gray-300" />
-        <p className="mt-3 text-sm text-gray-500">No products yet.</p>
+        <Package className="h-10 w-10 text-fresh-faint" />
+        <p className="mt-3 text-sm text-fresh-muted">No products yet.</p>
       </div>
     );
   }

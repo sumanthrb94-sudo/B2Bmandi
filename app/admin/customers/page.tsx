@@ -42,8 +42,8 @@ export default async function AdminCustomersPage() {
   if (customers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Users className="h-10 w-10 text-gray-300" />
-        <p className="mt-3 text-sm text-gray-500">No customers yet.</p>
+        <Users className="h-10 w-10 text-fresh-faint" />
+        <p className="mt-3 text-sm text-fresh-muted">No customers yet.</p>
       </div>
     );
   }
@@ -56,12 +56,12 @@ export default async function AdminCustomersPage() {
           <Card key={c.id}>
             <CardBody className="space-y-2 p-4">
               <div>
-                <p className="text-sm font-semibold text-gray-900">{c.name}</p>
+                <p className="text-sm font-semibold text-fresh-ink">{c.name}</p>
                 {c.businessName && (
-                  <p className="text-xs text-gray-500">{c.businessName}</p>
+                  <p className="text-xs text-fresh-muted">{c.businessName}</p>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fresh-muted">
                 {c.phone && (
                   <span className="inline-flex items-center gap-1">
                     <Phone className="h-3.5 w-3.5" />
@@ -75,12 +75,12 @@ export default async function AdminCustomersPage() {
                   </span>
                 )}
               </div>
-              <p className="border-t border-gray-100 pt-2 text-sm text-gray-700">
-                <span className="font-medium text-gray-900">
+              <p className="border-t border-fresh-border pt-2 text-sm text-fresh-muted">
+                <span className="font-medium text-fresh-ink">
                   {stat.orders}
                 </span>{" "}
                 order{stat.orders === 1 ? "" : "s"} ·{" "}
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-fresh-ink">
                   {formatCurrency(stat.spent)}
                 </span>{" "}
                 spent
