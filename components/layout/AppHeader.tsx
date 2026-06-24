@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Sprout, LayoutDashboard, LogOut, Package, LogIn, User } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 
+// The onboarding / sign-in experience is a full-bleed branded flow that owns the
+// whole screen, so the global app header is hidden on those routes.
+const HIDE_HEADER_ON = ["/login", "/register"];
+
 export function AppHeader({ session }: { session: SessionPayload | null }) {
   const router = useRouter();
+  const pathname = usePathname();
   const isAdmin = session?.role === "ADMIN";
+
+  if (HIDE_HEADER_ON.includes(pathname)) return null;
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });

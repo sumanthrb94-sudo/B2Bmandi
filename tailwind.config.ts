@@ -8,38 +8,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Ninjacart-inspired fresh-produce palette
+        // FreshCart "Greengrocer" palette (from the onboarding design system)
         brand: {
-          50: "#effdf4",
-          100: "#d8fbe5",
-          200: "#b3f5cd",
-          300: "#79eaa8",
-          400: "#3dd67d",
-          500: "#16bd5f", // primary green
-          600: "#0a9a4b",
-          700: "#0a793e",
-          800: "#0d5f34",
-          900: "#0c4e2d",
+          50: "#eafaf0",
+          100: "#cdf0db",
+          200: "#9fe3bb",
+          300: "#63cf90",
+          400: "#2fb567",
+          500: "#129E47", // primary green
+          600: "#0C7A3C", // gradient g1
+          700: "#0A5C2E", // gradient g2
+          800: "#084A26", // gradient g3
+          900: "#063a1e",
         },
+        // Warm yellow accent (CTA highlights, success burst)
         accent: {
-          50: "#fff8ed",
-          100: "#ffefd4",
-          200: "#ffdca8",
-          300: "#ffc270",
-          400: "#ff9d37",
-          500: "#ff8014", // orange accent
-          600: "#f0640a",
-          700: "#c74a0b",
-          800: "#9e3a11",
-          900: "#7f3212",
+          50: "#fff8e6",
+          100: "#ffefc2",
+          200: "#ffe28a",
+          300: "#ffd25c",
+          400: "#FFD23F",
+          500: "#FFC233", // accent
+          600: "#f0a90f",
+          700: "#c2860a",
+          800: "#996a0c",
+          900: "#7a5410",
+        },
+        // FreshCart neutral tokens (greens-leaning, from the design)
+        fresh: {
+          ink: "#14271B", // primary text on light
+          muted: "#5F7065", // secondary text
+          faint: "#8A9A8E", // tertiary / hints
+          border: "#E3E8E0", // field & card borders
+          surface: "#FBFBF6", // light screen background
+          field: "#F6F8F3", // empty field fill
+          dot: "#CBD5C9", // inactive progress dot
+          ink2: "#0A3D1E", // dark green ink (text on yellow)
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Bricolage Grotesque", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        field: "16px",
+        btn: "18px",
       },
       boxShadow: {
         card: "0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04)",
         "card-hover": "0 8px 24px -6px rgba(0,0,0,0.12)",
+        cta: "0 10px 24px rgba(0,0,0,.16)",
+        "cta-accent": "0 10px 24px rgba(0,0,0,.22)",
       },
     },
   },
