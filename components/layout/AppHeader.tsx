@@ -30,7 +30,7 @@ export function AppHeader({ session }: { session: SessionPayload | null }) {
           <Sprout className="h-5 w-5" />
         </span>
         <div className="leading-tight">
-          <p className="text-base font-bold tracking-tight">FreshKart</p>
+          <p className="font-display text-base font-extrabold tracking-tight">FreshCart</p>
           <p className="text-[10px] text-white/80">Wholesale B2B · per kg</p>
         </div>
       </Link>
