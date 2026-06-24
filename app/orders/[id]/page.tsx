@@ -21,7 +21,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Track order — FreshKart",
+  title: "Track order — FreshCart",
 };
 
 const STAGES = [
@@ -66,9 +66,9 @@ export default async function OrderTrackPage({
     : STAGES.findIndex((s) => s.key === order.status);
 
   return (
-    <div className="px-4 py-4">
+    <div className="min-h-screen bg-fresh-surface px-4 py-5">
       {placed && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2.5 text-sm font-medium text-brand-800">
+        <div className="mb-3 flex items-center gap-2 rounded-2xl bg-brand-50 px-3 py-2.5 text-sm font-medium text-brand-800">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           Order placed successfully!
         </div>
@@ -77,10 +77,10 @@ export default async function OrderTrackPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-base font-bold text-gray-900">
+          <p className="font-display text-xl font-extrabold tracking-tight text-fresh-ink">
             {order.orderNumber}
           </p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-fresh-faint">
             Placed {formatDate(order.createdAt)}
           </p>
         </div>
@@ -88,17 +88,17 @@ export default async function OrderTrackPage({
       </div>
 
       {/* Tracking */}
-      <section className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <section className="mt-4 rounded-3xl border border-fresh-border bg-white p-4 shadow-card">
         {cancelled ? (
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500">
               <XCircle className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-semibold text-fresh-ink">
                 Order cancelled
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-fresh-muted">
                 This order was cancelled and stock was released.
               </p>
             </div>
@@ -119,8 +119,8 @@ export default async function OrderTrackPage({
                         "z-10 flex h-9 w-9 items-center justify-center rounded-full ring-4 ring-white",
                         done || current
                           ? "bg-brand-500 text-white"
-                          : "bg-gray-100 text-gray-400",
-                        current ? "shadow-[0_0_0_4px_rgba(22,189,95,0.18)]" : "",
+                          : "bg-fresh-field text-fresh-faint",
+                        current ? "shadow-[0_0_0_4px_rgba(18,158,71,0.18)]" : "",
                       ].join(" ")}
                     >
                       <Icon className="h-4 w-4" />
@@ -129,7 +129,7 @@ export default async function OrderTrackPage({
                       <span
                         className={[
                           "absolute top-9 h-[calc(100%-0.5rem)] w-0.5",
-                          done ? "bg-brand-400" : "bg-gray-200",
+                          done ? "bg-brand-400" : "bg-fresh-border",
                         ].join(" ")}
                       />
                     )}
@@ -142,13 +142,13 @@ export default async function OrderTrackPage({
                         current
                           ? "text-brand-700"
                           : done
-                            ? "text-gray-900"
-                            : "text-gray-400",
+                            ? "text-fresh-ink"
+                            : "text-fresh-faint",
                       ].join(" ")}
                     >
                       {stage.label}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-fresh-faint">
                       {current
                         ? stage.note
                         : done
@@ -164,14 +164,14 @@ export default async function OrderTrackPage({
       </section>
 
       {/* Items */}
-      <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-        <p className="mb-2 text-sm font-bold text-gray-900">
+      <section className="mt-3 rounded-3xl border border-fresh-border bg-white p-3 shadow-card">
+        <p className="mb-2 text-sm font-bold text-fresh-ink">
           Items ({order.items.length})
         </p>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-fresh-border">
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center gap-3 py-2.5">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-fresh-field">
                 <SafeImage
                   src={item.product.image}
                   alt={item.productName}
@@ -181,55 +181,55 @@ export default async function OrderTrackPage({
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-gray-900">
+                <p className="truncate text-sm font-semibold text-fresh-ink">
                   {item.productName}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-fresh-muted">
                   {formatCurrency(item.unitPrice)}/{item.unit} × {item.quantity}
                 </p>
               </div>
-              <span className="text-sm font-bold text-gray-900">
+              <span className="text-sm font-bold text-fresh-ink">
                 {formatCurrency(item.lineTotal)}
               </span>
             </div>
           ))}
         </div>
-        <div className="mt-2 flex justify-between border-t border-dashed border-gray-200 pt-2">
-          <span className="font-bold text-gray-900">Total</span>
-          <span className="font-bold text-gray-900">
+        <div className="mt-2 flex justify-between border-t border-dashed border-fresh-border pt-2">
+          <span className="font-bold text-fresh-ink">Total</span>
+          <span className="font-bold text-fresh-ink">
             {formatCurrency(order.totalAmount)}
           </span>
         </div>
       </section>
 
       {/* Delivery */}
-      <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-        <p className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-gray-900">
+      <section className="mt-3 rounded-3xl border border-fresh-border bg-white p-3 shadow-card">
+        <p className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-fresh-ink">
           <MapPin className="h-4 w-4 text-brand-500" /> Delivery address
         </p>
-        <p className="text-sm text-gray-700">{order.deliveryName}</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-fresh-ink">{order.deliveryName}</p>
+        <p className="text-sm text-fresh-muted">
           {order.deliveryAddress}, {order.deliveryCity} — {order.deliveryPincode}
         </p>
-        <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
+        <p className="mt-0.5 flex items-center gap-1 text-sm text-fresh-muted">
           <Phone className="h-3 w-3" /> {order.deliveryPhone}
         </p>
       </section>
 
       {/* Payment */}
-      <section className="mt-3 flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-        <span className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+      <section className="mt-3 flex items-center justify-between rounded-3xl border border-fresh-border bg-white p-3 shadow-card">
+        <span className="flex items-center gap-1.5 text-sm font-bold text-fresh-ink">
           <Wallet className="h-4 w-4 text-brand-500" /> Payment
         </span>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-fresh-muted">
           {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
         </span>
       </section>
 
       {order.notes && (
-        <section className="mt-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-          <p className="text-sm font-bold text-gray-900">Notes</p>
-          <p className="mt-1 text-sm text-gray-600">{order.notes}</p>
+        <section className="mt-3 rounded-3xl border border-fresh-border bg-white p-3 shadow-card">
+          <p className="text-sm font-bold text-fresh-ink">Notes</p>
+          <p className="mt-1 text-sm text-fresh-muted">{order.notes}</p>
         </section>
       )}
 

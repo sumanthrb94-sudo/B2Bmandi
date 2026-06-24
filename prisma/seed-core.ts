@@ -91,15 +91,9 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.user.deleteMany();
 
   const password = await bcrypt.hash("password123", 12);
-  // Branded login accounts use strong generated passwords (bcrypt hashes only;
-  // the plaintext is never stored in the repo).
-  const adminPassword =
-    "$2a$12$uKwPsFMJxf7yLT6PKVgEK.xGvN.ffVbNNwx7ocNAND9dodD3r8Rh.";
-  const customerPassword =
-    "$2a$12$u3fNHuANn7ZgTc20nUjAe.mVPWVHFBfpzT6G.XUqId4WU46mThFR.";
 
   await prisma.user.create({
-    data: { email: "admin@freshkart.in", password: adminPassword, name: "FreshKart Admin", role: "ADMIN", businessName: "FreshKart", city: "Bengaluru" },
+    data: { email: "admin@freshkart.in", password, name: "FreshKart Admin", role: "ADMIN", businessName: "FreshKart", city: "Bengaluru" },
   });
 
   const sellersData = [
@@ -117,10 +111,10 @@ export async function seedDatabase(prisma: PrismaClient) {
   }
 
   await prisma.user.create({
-    data: { email: "customer@freshkart.in", password: customerPassword, name: "FreshKart Customer", role: "BUYER", businessName: "Suresh Kirana Store", city: "Bengaluru", phone: "9812345678", address: "12, Gandhi Bazaar, Basavanagudi", pincode: "560004", gstin: "29BUYER1234A1Z9" },
+    data: { email: "customer@freshkart.in", password, name: "FreshKart Customer", role: "BUYER", businessName: "Suresh Kirana Store", businessType: "Kirana store", city: "Bengaluru", phone: "9812345678", address: "12, Gandhi Bazaar, Basavanagudi", pincode: "560004", gstin: "29BUYER1234A1Z9" },
   });
   await prisma.user.create({
-    data: { email: "chef@hotelblue.com", password, name: "Anita Desai", role: "BUYER", businessName: "Hotel Blue Orchid", city: "Pune", phone: "9823456789", address: "5, FC Road", pincode: "411004" },
+    data: { email: "chef@hotelblue.com", password, name: "Anita Desai", role: "BUYER", businessName: "Hotel Blue Orchid", businessType: "Hotel", city: "Pune", phone: "9823456789", address: "5, FC Road", pincode: "411004" },
   });
 
   let productCount = 0;

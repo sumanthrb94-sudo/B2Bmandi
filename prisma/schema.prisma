@@ -37,7 +37,7 @@ model User {
   name         String
   role         Role     @default(BUYER)
   businessName String?
-  businessType String? // e.g. "Kirana store", "Restaurant" — captured at onboarding
+  businessType String? // kirana store, restaurant, hotel, cloud kitchen, reseller
   phone        String?
   gstin        String? // GST identification number (India B2B)
   address      String?

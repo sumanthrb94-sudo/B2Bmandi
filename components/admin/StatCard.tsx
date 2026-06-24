@@ -28,16 +28,16 @@ export function StatCard({
     <Card className={className}>
       <CardBody className="flex items-start justify-between gap-2 p-4">
         <div className="min-w-0">
-          <p className="text-xs font-medium text-gray-500">{label}</p>
-          <p className="mt-1 text-xl font-bold tracking-tight text-gray-900">
+          <p className="text-xs font-medium text-fresh-muted">{label}</p>
+          <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-fresh-ink">
             {value}
           </p>
-          {hint && <p className="mt-0.5 text-[11px] text-gray-400">{hint}</p>}
+          {hint && <p className="mt-0.5 text-[11px] text-fresh-faint">{hint}</p>}
         </div>
         {icon && (
           <div
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
               accentClasses[accent],
             )}
           >

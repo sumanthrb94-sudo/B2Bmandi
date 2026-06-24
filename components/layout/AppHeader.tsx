@@ -5,18 +5,22 @@ import { useRouter, usePathname } from "next/navigation";
 import { Sprout, LayoutDashboard, LogOut, Package, LogIn, User } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 
+// The onboarding / sign-in experience is a full-bleed branded flow that owns the
+// whole screen, so the global app header is hidden on those routes.
+const HIDE_HEADER_ON = ["/login", "/register"];
+
 export function AppHeader({ session }: { session: SessionPayload | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const isAdmin = session?.role === "ADMIN";
 
-  // The onboarding flow is a full-screen, pre-auth experience — no app chrome.
-  if (pathname?.startsWith("/onboarding")) return null;
+  if (HIDE_HEADER_ON.includes(pathname) || pathname?.startsWith("/onboarding")) return null;
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    // Full page reload: clears Next.js router cache and prevents the back-button
+    // from returning to a protected page after logout.
+    window.location.replace("/login");
   }
 
   return (
@@ -26,7 +30,7 @@ export function AppHeader({ session }: { session: SessionPayload | null }) {
           <Sprout className="h-5 w-5" />
         </span>
         <div className="leading-tight">
-          <p className="text-base font-bold tracking-tight">FreshKart</p>
+          <p className="font-display text-base font-extrabold tracking-tight">FreshCart</p>
           <p className="text-[10px] text-white/80">Wholesale B2B · per kg</p>
         </div>
       </Link>

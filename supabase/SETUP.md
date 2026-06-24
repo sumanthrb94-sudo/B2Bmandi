@@ -2,6 +2,27 @@
 
 This app uses PostgreSQL via Prisma. Supabase is the recommended host.
 
+## ✅ This project is already provisioned — `mandi-db`
+
+The live app is wired to the Supabase project **`mandi-db`**
+(ref `fvwfodmxmesimnknpujg`, region `ap-northeast-1`). The schema and demo data
+are already created and seeded. To run the app against it, set these env vars
+(local `.env` and/or Vercel), replacing `[YOUR-DB-PASSWORD]` with the project's
+database password (URL-encode special characters):
+
+```
+DATABASE_URL="postgresql://postgres.fvwfodmxmesimnknpujg:[YOUR-DB-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.fvwfodmxmesimnknpujg:[YOUR-DB-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
+AUTH_SECRET="<long-random-string>"
+```
+
+Demo logins (all use `password123`): `customer@freshkart.in` (buyer),
+`admin@freshkart.in` (admin). The DB password is a project secret — grab it from
+Supabase dashboard → **Connect** (or **Settings → Database**); it is not stored
+in this repo.
+
+---
+
 ## ⚡ Fastest path (no CLI, no local DB access needed)
 
 Use this when you can't connect to the DB directly (e.g. a restricted network).

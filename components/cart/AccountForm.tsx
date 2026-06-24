@@ -56,13 +56,13 @@ export function AccountForm({ user }: { user: SafeUser }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
       {saved && (
-        <div className="flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-sm text-brand-800">
+        <div className="flex items-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 px-3.5 py-3 text-sm text-brand-800">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           Profile updated.
         </div>
